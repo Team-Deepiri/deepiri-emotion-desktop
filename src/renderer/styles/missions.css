@@ -1,0 +1,228 @@
+/* Mission Card Styles */
+
+.mission-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+}
+
+.mission-card {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d2d2d 100%);
+  border: 2px solid #007acc;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.mission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mission-header h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.mission-timer {
+  background: rgba(0, 122, 204, 0.2);
+  border: 1px solid #007acc;
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: #4ec9b0;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mission-progress {
+  margin-bottom: 16px;
+}
+
+.progress-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progress-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-label {
+  color: #cccccc;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.progress-bar {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007acc, #4ec9b0);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.progress-value {
+  color: #969696;
+  font-size: 11px;
+  text-align: right;
+}
+
+.mission-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-complete {
+  flex: 1;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-complete:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+}
+
+.btn-abandon {
+  flex: 1;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #cccccc;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-abandon:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.mission-complete {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.5);
+  z-index: 2000;
+  animation: celebrate 0.5s ease-out;
+}
+
+@keyframes celebrate {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.mission-complete h2 {
+  margin: 0 0 12px 0;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.mission-complete p {
+  margin: 8px 0;
+  color: #ffffff;
+  font-size: 16px;
+}
+
+/* Mission Badge Animations */
+.mission-badge {
+  display: inline-block;
+  animation: bounce 0.6s ease-out;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Progress Pulse Animation */
+.progress-fill {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

@@ -1,0 +1,322 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+// Expose protected methods that allow the renderer process to use
+// the ipcRenderer without exposing the entire object
+contextBridge.exposeInMainWorld('electronAPI', {
+  // API Requests
+  apiRequest: async ({ method, endpoint, data, headers = {} }) => {
+    try {
+      if (window.__TAURI__) {
+        // Tauri environment
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('api_request', { method, endpoint, data });
+      } else {
+        // Electron environment
+        return await ipcRenderer.invoke('api-request', { method, endpoint, data, headers });
+      }
+    } catch (error) {
+      console.error('API request error:', error);
+      throw error;
+    }
+  },
+
+  // AI Requests
+  aiRequest: async ({ endpoint, data, headers = {} }) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('api_request', { 
+          method: 'POST', 
+          endpoint: `/ai${endpoint}`, 
+          data 
+        });
+      } else {
+        return await ipcRenderer.invoke('ai-request', { endpoint, data, headers });
+      }
+    } catch (error) {
+      console.error('AI request error:', error);
+      throw error;
+    }
+  },
+
+  // Task Management
+  createTask: async (title, description = '', type = 'manual') => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('create_task', { title, description, task_type: type });
+      } else {
+        return await ipcRenderer.invoke('create-task', { title, description, type });
+      }
+    } catch (error) {
+      console.error('Create task error:', error);
+      throw error;
+    }
+  },
+
+  getTasks: async () => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('get_tasks');
+      } else {
+        return await ipcRenderer.invoke('get-tasks');
+      }
+    } catch (error) {
+      console.error('Get tasks error:', error);
+      throw error;
+    }
+  },
+
+  // Challenge Management
+  generateChallenge: async (taskData) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('api_request', {
+          method: 'POST',
+          endpoint: '/challenge/generate',
+          data: { task: taskData }
+        });
+      } else {
+        return await ipcRenderer.invoke('generate-challenge', taskData);
+      }
+    } catch (error) {
+      console.error('Generate challenge error:', error);
+      throw error;
+    }
+  },
+
+  generateChallengeLocal: async (taskId) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('generate_challenge_local', { task_id: taskId });
+      } else {
+        return await ipcRenderer.invoke('generate-challenge-local', taskId);
+      }
+    } catch (error) {
+      console.error('Generate local challenge error:', error);
+      throw error;
+    }
+  },
+
+  // Task Classification
+  classifyTask: async (task, description = null) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('api_request', {
+          method: 'POST',
+          endpoint: '/task/classify',
+          data: { task, description }
+        });
+      } else {
+        return await ipcRenderer.invoke('classify-task', { task, description });
+      }
+    } catch (error) {
+      console.error('Classify task error:', error);
+      throw error;
+    }
+  },
+
+  // Gamification
+  awardPoints: async (points) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('award_points', { points });
+      } else {
+        return await ipcRenderer.invoke('award-points', points);
+      }
+    } catch (error) {
+      console.error('Award points error:', error);
+      throw error;
+    }
+  },
+
+  getGamificationState: async () => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('get_gamification_state');
+      } else {
+        return await ipcRenderer.invoke('get-gamification-state');
+      }
+    } catch (error) {
+      console.error('Get gamification state error:', error);
+      throw error;
+    }
+  },
+
+  // Integrations
+  syncGithubIssues: async (repo = '', token = null) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('sync_github_issues', { repo, token });
+      } else {
+        return await ipcRenderer.invoke('sync-github-issues', { repo, token });
+      }
+    } catch (error) {
+      console.error('Sync GitHub issues error:', error);
+      throw error;
+    }
+  },
+
+  // LLM
+  getLLMHint: async (task) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('get_llm_hint', { task });
+      } else {
+        return await ipcRenderer.invoke('get-llm-hint', task);
+      }
+    } catch (error) {
+      console.error('Get LLM hint error:', error);
+      return 'Hint generation unavailable';
+    }
+  },
+
+  completeCode: async (code, language) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('complete_code', { code, language });
+      } else {
+        return await ipcRenderer.invoke('complete-code', { code, language });
+      }
+    } catch (error) {
+      console.error('Complete code error:', error);
+      return code;
+    }
+  },
+
+  // Session Recording
+  startSession: async (userId) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('start_session', { user_id: userId });
+      } else {
+        return await ipcRenderer.invoke('start-session', userId);
+      }
+    } catch (error) {
+      console.error('Start session error:', error);
+      throw error;
+    }
+  },
+
+  recordKeystroke: async (key, file, line, column) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        await invoke('record_keystroke', { key, file, line, column });
+      } else {
+        await ipcRenderer.invoke('record-keystroke', { key, file, line, column });
+      }
+    } catch (error) {
+      console.error('Record keystroke error:', error);
+    }
+  },
+
+  recordFileChange: async (file, changeType, details) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        await invoke('api_request', {
+          method: 'POST',
+          endpoint: '/session/record-file-change',
+          data: { file, change_type: changeType, details }
+        });
+      } else {
+        await ipcRenderer.invoke('record-file-change', { file, changeType, details });
+      }
+    } catch (error) {
+      console.error('Record file change error:', error);
+    }
+  },
+
+  endSession: async () => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        return await invoke('end_session');
+      } else {
+        return await ipcRenderer.invoke('end-session');
+      }
+    } catch (error) {
+      console.error('End session error:', error);
+      throw error;
+    }
+  },
+
+  // File System
+  openFile: async (path) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        const { readTextFile } = window.__TAURI__.fs;
+        return await readTextFile(path);
+      } else {
+        return await ipcRenderer.invoke('open-file', path);
+      }
+    } catch (error) {
+      console.error('Open file error:', error);
+      throw error;
+    }
+  },
+
+  saveFile: async (path, content) => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        const { writeTextFile } = window.__TAURI__.fs;
+        await writeTextFile(path, content);
+        return { success: true };
+      } else {
+        return await ipcRenderer.invoke('save-file', { path, content });
+      }
+    } catch (error) {
+      console.error('Save file error:', error);
+      throw error;
+    }
+  },
+
+  // IDE Utilities
+  openProject: async () => {
+    try {
+      if (window.__TAURI__) {
+        const { invoke } = window.__TAURI__.tauri;
+        const { open } = window.__TAURI__.dialog;
+        return await open({ directory: true });
+      } else {
+        return await ipcRenderer.invoke('open-project');
+      }
+    } catch (error) {
+      console.error('Open project error:', error);
+      throw error;
+    }
+  }
+});
+
+// Expose IDE global utilities
+window.ide = {
+  createNewTask: async () => {
+    const title = prompt('Enter task title:');
+    if (title) {
+      await window.electronAPI.createTask(title);
+    }
+  },
+  generateChallenge: async () => {
+    const taskText = prompt('Enter task for challenge:');
+    if (taskText) {
+      const task = await window.electronAPI.createTask(taskText);
+      return await window.electronAPI.generateChallenge(task.data);
+    }
+  },
+  openProject: async () => {
+    await window.electronAPI.openProject();
+  }
+};

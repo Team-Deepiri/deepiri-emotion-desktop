@@ -1,0 +1,121 @@
+# ========================================
+# SECRETS & ENVIRONMENT FILES
+# ========================================
+# NEVER commit secrets or environment files
+# BUT allow example files to be committed (env.example, env.example.*, etc.)
+.env
+.env.*
+!.env.example
+!.env.example.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging.local
+# Ignore files ending in .env (but example files don't end in .env, so they're safe)
+*.env
+# Explicitly allow example files (env.example, env.example.desktop, etc.)
+!env.example*
+!*env.example*
+
+# Firebase Admin SDK
+firebase-admin*.json
+*-firebase-adminsdk-*.json
+**/firebase-adminsdk-*.json
+
+# ========================================
+# DEPENDENCIES
+# ========================================
+node_modules/
+.pnp
+.pnp.js
+
+# ========================================
+# TESTING
+# ========================================
+coverage/
+*.lcov
+
+# ========================================
+# PRODUCTION
+# ========================================
+build/
+dist/
+web-build/
+
+# ========================================
+# LOGS
+# ========================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ========================================
+# REACT NATIVE - SECRETS & KEYS
+# ========================================
+# NEVER commit these sensitive files
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+*.pem
+*.cert
+*.crt
+*.keystore
+*.pfx
+
+# ========================================
+# ANDROID
+# ========================================
+android/app/build/
+android/.gradle/
+android/local.properties
+*.apk
+*.aab
+
+# ========================================
+# iOS
+# ========================================
+ios/Pods/
+ios/build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+project.xcworkspace
+
+# ========================================
+# FLUTTER (if using Flutter)
+# ========================================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# ========================================
+# OS & EDITOR
+# ========================================
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+

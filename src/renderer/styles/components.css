@@ -1,0 +1,669 @@
+/* Component Styles */
+
+.task-manager {
+  padding: 12px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.task-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.task-manager-header h3 {
+  margin: 0;
+  color: #cccccc;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  padding: 6px 12px;
+  background: #007acc;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background: #1177bb;
+}
+
+.task-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.task-search {
+  flex: 1;
+  padding: 6px 10px;
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 4px;
+  color: #cccccc;
+  font-size: 12px;
+}
+
+.task-search:focus {
+  outline: none;
+  border-color: #007acc;
+}
+
+.task-filters select {
+  padding: 6px 10px;
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 4px;
+  color: #cccccc;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-item {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  padding: 12px;
+  transition: all 0.2s;
+}
+
+.task-item:hover {
+  background: #333333;
+  border-color: #007acc;
+}
+
+.task-content {
+  cursor: pointer;
+}
+
+.task-content h4 {
+  margin: 0 0 6px 0;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.task-content p {
+  margin: 0 0 8px 0;
+  color: #969696;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.task-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.task-status {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.task-status.pending {
+  background: #ffa500;
+  color: #000000;
+}
+
+.task-status.in_progress {
+  background: #007acc;
+  color: #ffffff;
+}
+
+.task-status.completed {
+  background: #4caf50;
+  color: #ffffff;
+}
+
+.task-type {
+  padding: 2px 6px;
+  background: #404040;
+  color: #cccccc;
+  border-radius: 3px;
+  font-size: 10px;
+}
+
+.task-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.btn-mission {
+  padding: 4px 8px;
+  background: #4caf50;
+  color: #ffffff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.btn-mission:hover {
+  background: #45a049;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #969696;
+}
+
+.empty-state p {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+}
+
+.empty-state button {
+  padding: 8px 16px;
+  background: #007acc;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.challenge-panel {
+  padding: 12px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.challenge-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.challenge-panel-header h3 {
+  margin: 0;
+  color: #cccccc;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.challenge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.challenge-item {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  padding: 12px;
+  transition: all 0.2s;
+}
+
+.challenge-item.active {
+  border-color: #007acc;
+  background: #1e3a5f;
+}
+
+.challenge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.challenge-header h4 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.challenge-difficulty {
+  padding: 2px 6px;
+  background: #007acc;
+  color: #ffffff;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.challenge-description {
+  margin: 0 0 8px 0;
+  color: #cccccc;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.challenge-meta {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: #969696;
+}
+
+.challenge-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.challenge-actions button {
+  padding: 6px 12px;
+  background: #007acc;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.challenge-actions button:hover {
+  background: #1177bb;
+}
+
+.gamification-widget {
+  padding: 12px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+
+.stat-icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  color: #969696;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.xp-progress {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.xp-label {
+  color: #cccccc;
+  font-size: 11px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.xp-bar {
+  height: 8px;
+  background: #1e1e1e;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007acc, #4ec9b0);
+  transition: width 0.3s;
+}
+
+.xp-text {
+  color: #969696;
+  font-size: 10px;
+  text-align: right;
+}
+
+.badges-section {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.badges-title {
+  color: #cccccc;
+  font-size: 11px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.badges-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge-item {
+  width: 32px;
+  height: 32px;
+  background: #1e1e1e;
+  border: 1px solid #404040;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.badge-item:hover {
+  transform: scale(1.1);
+}
+
+.integration-panel {
+  padding: 12px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.integration-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.integration-header h3 {
+  margin: 0;
+  color: #cccccc;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.integration-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.integration-item {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.integration-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.integration-icon {
+  font-size: 24px;
+}
+
+.integration-info h4 {
+  margin: 0 0 4px 0;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.integration-info p {
+  margin: 0;
+  color: #969696;
+  font-size: 11px;
+}
+
+.integration-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.integration-actions button {
+  padding: 6px 12px;
+  background: #007acc;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.integration-actions button:hover {
+  background: #1177bb;
+}
+
+.integration-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.terminal-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #1e1e1e;
+}
+
+.terminal-header {
+  padding: 8px 12px;
+  background: #2d2d2d;
+  border-bottom: 1px solid #404040;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.terminal-header span {
+  color: #cccccc;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.terminal-header button {
+  padding: 4px 8px;
+  background: #404040;
+  color: #cccccc;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.terminal-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #cccccc;
+  line-height: 1.6;
+}
+
+.terminal-line {
+  margin-bottom: 4px;
+}
+
+.terminal-line.input {
+  color: #4ec9b0;
+}
+
+.prompt {
+  color: #007acc;
+  margin-right: 6px;
+}
+
+.terminal-input-form {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #2d2d2d;
+  border-top: 1px solid #404040;
+}
+
+.terminal-input {
+  flex: 1;
+  background: #1e1e1e;
+  border: none;
+  color: #cccccc;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  padding: 6px;
+  outline: none;
+}
+
+.settings-panel {
+  padding: 12px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.settings-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-section {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.settings-section h3 {
+  margin: 0 0 12px 0;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.setting-item {
+  margin-bottom: 12px;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-item label {
+  display: block;
+  color: #cccccc;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.setting-item input[type="text"],
+.setting-item input[type="number"],
+.setting-item select {
+  width: 100%;
+  padding: 8px;
+  background: #1e1e1e;
+  border: 1px solid #404040;
+  border-radius: 4px;
+  color: #cccccc;
+  font-size: 12px;
+}
+
+.setting-item input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.setting-item input:focus,
+.setting-item select:focus {
+  outline: none;
+  border-color: #007acc;
+}
+
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: #cccccc;
+}
+
+.welcome-screen h1 {
+  margin: 0 0 12px 0;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.welcome-screen p {
+  margin: 0 0 32px 0;
+  font-size: 16px;
+  color: #969696;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.quick-actions button {
+  padding: 12px 24px;
+  background: #007acc;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.quick-actions button:hover {
+  background: #1177bb;
+}
