@@ -339,7 +339,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('command-output', sub);
   },
   onCommandExit: (cb) => {
-    const sub = (event, data) => => cb(data);
+    const sub = (event, data) => { cb(data); };
     ipcRenderer.on('command-exit', sub);
     return () => ipcRenderer.removeListener('command-exit', sub);
   },
