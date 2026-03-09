@@ -20,7 +20,7 @@ export function createAgentRuntime(opts = {}) {
   const rateLimiter = createRateLimiter(opts.rateLimit);
   const agents = new Map();
   const subscriptions = [];
-  const pendingBySubject = new Map();
+  const _pendingBySubject = new Map();
   let nextAgentId = 1;
 
   function registerAgent(manifest, capabilities = 0) {

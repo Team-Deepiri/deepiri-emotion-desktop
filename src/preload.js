@@ -256,7 +256,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openFile: async (path) => {
     try {
       if (window.__TAURI__) {
-        const { invoke } = window.__TAURI__.tauri;
         const { readTextFile } = window.__TAURI__.fs;
         return await readTextFile(path);
       } else {
@@ -271,7 +270,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveFile: async (path, content) => {
     try {
       if (window.__TAURI__) {
-        const { invoke } = window.__TAURI__.tauri;
         const { writeTextFile } = window.__TAURI__.fs;
         await writeTextFile(path, content);
         return { success: true };
@@ -308,7 +306,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openProject: async () => {
     try {
       if (window.__TAURI__) {
-        const { invoke } = window.__TAURI__.tauri;
         const { open } = window.__TAURI__.dialog;
         return await open({ directory: true });
       } else {
@@ -324,6 +321,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setProjectRoot: (path) => ipcRenderer.invoke('set-project-root', path),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   listDirectory: (path) => ipcRenderer.invoke('list-directory', path),
+  listWorkspaceFiles: (rootDir) => ipcRenderer.invoke('list-workspace-files', rootDir),
   createFile: (opts) => ipcRenderer.invoke('create-file', opts),
   createFolder: (opts) => ipcRenderer.invoke('create-folder', opts),
   deletePath: (path) => ipcRenderer.invoke('delete-path', path),
@@ -331,7 +329,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   searchInFolder: (rootDir, query, opts) => ipcRenderer.invoke('search-in-folder', rootDir, query, opts),
 
   runCommand: (opts) => ipcRenderer.invoke('run-command', opts),
-  cancelCommand: () => ipcRenderer.invoke('cancel-command'),
+  cancelCommand: (terminalId) => ipcRenderer.invoke('cancel-command', terminalId),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   onCommandOutput: (cb) => {
     const sub = (event, data) => cb(data);
@@ -343,6 +341,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('command-exit', sub);
     return () => ipcRenderer.removeListener('command-exit', sub);
   },
+
+  listAgents: () => ipcRenderer.invoke('list-agents'),
+  registerAgent: (opts) => ipcRenderer.invoke('register-agent', opts),
+  unregisterAgent: (agentId) => ipcRenderer.invoke('unregister-agent', agentId),
 
   // Fabric bus (in-process semantic routing, NeuralGPTOS-inspired)
   fabricSend: (subject, data) => ipcRenderer.invoke('fabric-send', { subject, data }),
@@ -368,7 +370,31 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const sub = () => cb();
     ipcRenderer.on('menu-about', sub);
     return () => ipcRenderer.removeListener('menu-about', sub);
-  }
+  },
+  onMenuNewFile: (cb) => {
+    const sub = () => cb();
+    ipcRenderer.on('menu-new-file', sub);
+    return () => ipcRenderer.removeListener('menu-new-file', sub);
+  },
+  onMenuOpenFolder: (cb) => {
+    const sub = () => cb();
+    ipcRenderer.on('menu-open-folder', sub);
+    return () => ipcRenderer.removeListener('menu-open-folder', sub);
+  },
+  onMenuSave: (cb) => {
+    const sub = () => cb();
+    ipcRenderer.on('menu-save', sub);
+    return () => ipcRenderer.removeListener('menu-save', sub);
+  },
+
+  // AI provider settings (stored in main process userData)
+  getAiSettings: () => ipcRenderer.invoke('get-ai-settings'),
+  setAiSettings: (settings) => ipcRenderer.invoke('set-ai-settings', settings),
+  chatCompletion: (opts) => ipcRenderer.invoke('chat-completion', opts),
+  getUsage: () => ipcRenderer.invoke('get-usage'),
+  getUsageLimits: () => ipcRenderer.invoke('get-usage-limits'),
+  setUsageLimits: (limits) => ipcRenderer.invoke('set-usage-limits', limits),
+  resetUsage: () => ipcRenderer.invoke('reset-usage')
 });
 
 // Expose IDE global utilities

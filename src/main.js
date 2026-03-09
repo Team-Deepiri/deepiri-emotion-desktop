@@ -30,7 +30,8 @@ let mainWindow;
 let isDev = process.argv.includes('--dev');
 let projectRoot = null;
 let heloxProcess = null;
-let shellProcess = null;
+/** @type {Map<string, import('child_process').ChildProcess>} */
+const shellProcesses = new Map();
 
 // In-process agent runtime (Fabric-style bus) and neural memory
 const agentRuntime = createAgentRuntime();
@@ -97,24 +98,31 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Menu
+// Menu — IDE-style (New File, Open Folder, etc.)
 function createMenu() {
   const template = [
     {
       label: 'File',
       submenu: [
         {
-          label: 'New Task',
+          label: 'New File',
           accelerator: 'CmdOrCtrl+N',
           click: () => {
-            mainWindow.webContents.send('menu-new-task');
+            mainWindow.webContents.send('menu-new-file');
           }
         },
         {
-          label: 'New Challenge',
-          accelerator: 'CmdOrCtrl+Shift+N',
+          label: 'Open Folder…',
+          accelerator: 'CmdOrCtrl+O',
           click: () => {
-            mainWindow.webContents.send('menu-new-challenge');
+            mainWindow.webContents.send('menu-open-folder');
+          }
+        },
+        {
+          label: 'Save',
+          accelerator: 'CmdOrCtrl+S',
+          click: () => {
+            mainWindow.webContents.send('menu-save');
           }
         },
         { type: 'separator' },
@@ -246,6 +254,299 @@ ipcMain.handle('ai-request', async (event, { endpoint, data, headers = {} }) => 
   }
 });
 
+// --- AI provider settings (persist in userData) ---
+const AI_SETTINGS_PATH = join(app.getPath('userData'), 'ai-settings.json');
+const USAGE_PATH = join(app.getPath('userData'), 'api-usage.json');
+const USAGE_LIMITS_PATH = join(app.getPath('userData'), 'usage-limits.json');
+
+const defaultAiSettings = () => ({
+  provider: 'cyrex',
+  openaiApiKey: '',
+  anthropicApiKey: '',
+  googleApiKey: '',
+  openaiModel: 'gpt-4o-mini',
+  anthropicModel: 'claude-3-5-sonnet-20241022',
+  googleModel: 'gemini-1.5-flash',
+  localType: 'cyrex',
+  localCyrexUrl: AI_SERVICE_URL,
+  localOllamaUrl: 'http://localhost:11434',
+  localOllamaModel: 'llama3.2'
+});
+
+async function loadAiSettings() {
+  try {
+    if (existsSync(AI_SETTINGS_PATH)) {
+      const raw = await readFile(AI_SETTINGS_PATH, 'utf-8');
+      return { ...defaultAiSettings(), ...JSON.parse(raw) };
+    }
+  } catch { /* ignore */ }
+  return defaultAiSettings();
+}
+
+async function saveAiSettings(settings) {
+  await mkdir(dirname(AI_SETTINGS_PATH), { recursive: true });
+  await writeFile(AI_SETTINGS_PATH, JSON.stringify(settings, null, 2), 'utf-8');
+}
+
+ipcMain.handle('get-ai-settings', async () => {
+  return await loadAiSettings();
+});
+
+ipcMain.handle('set-ai-settings', async (event, settings) => {
+  const current = await loadAiSettings();
+  const merged = { ...current, ...settings };
+  await saveAiSettings(merged);
+  return merged;
+});
+
+// --- API usage tracking and limits ---
+const defaultUsage = () => ({ daily: {}, recentRequestTimestamps: [] });
+const defaultUsageLimits = () => ({
+  rateLimitRequestsPerMinute: 0,
+  dailyLimitRequests: 0,
+  dailyLimitTokens: 0
+});
+
+async function loadUsage() {
+  try {
+    if (existsSync(USAGE_PATH)) {
+      const raw = await readFile(USAGE_PATH, 'utf-8');
+      const data = JSON.parse(raw);
+      return { ...defaultUsage(), ...data, recentRequestTimestamps: data.recentRequestTimestamps || [] };
+    }
+  } catch { /* ignore */ }
+  return defaultUsage();
+}
+
+async function saveUsage(data) {
+  await mkdir(dirname(USAGE_PATH), { recursive: true });
+  await writeFile(USAGE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+async function loadUsageLimits() {
+  try {
+    if (existsSync(USAGE_LIMITS_PATH)) {
+      const raw = await readFile(USAGE_LIMITS_PATH, 'utf-8');
+      return { ...defaultUsageLimits(), ...JSON.parse(raw) };
+    }
+  } catch { /* ignore */ }
+  return defaultUsageLimits();
+}
+
+async function saveUsageLimits(limits) {
+  await mkdir(dirname(USAGE_LIMITS_PATH), { recursive: true });
+  await writeFile(USAGE_LIMITS_PATH, JSON.stringify(limits, null, 2), 'utf-8');
+}
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RECENT_TIMESTAMPS_MAX = 200;
+
+async function checkUsageLimits() {
+  const limits = await loadUsageLimits();
+  const usage = await loadUsage();
+  const now = Date.now();
+  const recent = (usage.recentRequestTimestamps || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+
+  if (limits.rateLimitRequestsPerMinute > 0 && recent.length >= limits.rateLimitRequestsPerMinute) {
+    return { allowed: false, reason: `Rate limit: max ${limits.rateLimitRequestsPerMinute} requests per minute.` };
+  }
+
+  const day = todayKey();
+  const dayUsage = usage.daily?.[day] || { requests: 0, inputTokens: 0, outputTokens: 0 };
+  const totalTokens = (dayUsage.inputTokens || 0) + (dayUsage.outputTokens || 0);
+
+  if (limits.dailyLimitRequests > 0 && dayUsage.requests >= limits.dailyLimitRequests) {
+    return { allowed: false, reason: `Daily request limit reached (${limits.dailyLimitRequests}).` };
+  }
+  if (limits.dailyLimitTokens > 0 && totalTokens >= limits.dailyLimitTokens) {
+    return { allowed: false, reason: `Daily token limit reached (${limits.dailyLimitTokens}).` };
+  }
+  return { allowed: true };
+}
+
+async function recordUsage(inputTokens = 0, outputTokens = 0) {
+  const usage = await loadUsage();
+  const day = todayKey();
+  if (!usage.daily) usage.daily = {};
+  if (!usage.daily[day]) usage.daily[day] = { requests: 0, inputTokens: 0, outputTokens: 0 };
+  usage.daily[day].requests += 1;
+  usage.daily[day].inputTokens = (usage.daily[day].inputTokens || 0) + inputTokens;
+  usage.daily[day].outputTokens = (usage.daily[day].outputTokens || 0) + outputTokens;
+  usage.recentRequestTimestamps = usage.recentRequestTimestamps || [];
+  usage.recentRequestTimestamps.push(Date.now());
+  usage.recentRequestTimestamps = usage.recentRequestTimestamps.slice(-RECENT_TIMESTAMPS_MAX);
+  await saveUsage(usage);
+}
+
+ipcMain.handle('get-usage', async () => {
+  const usage = await loadUsage();
+  const day = todayKey();
+  const today = usage.daily?.[day] || { requests: 0, inputTokens: 0, outputTokens: 0 };
+  return { today, daily: usage.daily || {}, recentRequestTimestamps: usage.recentRequestTimestamps || [] };
+});
+
+ipcMain.handle('get-usage-limits', async () => loadUsageLimits());
+ipcMain.handle('set-usage-limits', async (event, limits) => {
+  const current = await loadUsageLimits();
+  const merged = { ...current, ...limits };
+  await saveUsageLimits(merged);
+  return merged;
+});
+ipcMain.handle('reset-usage', async () => {
+  await saveUsage(defaultUsage());
+  return { ok: true };
+});
+
+// --- Unified chat completion (OpenAI, Anthropic, Google, Ollama, Cyrex) ---
+ipcMain.handle('chat-completion', async (event, { messages, systemPrompt, context, fileContent, agentProfile }) => {
+  const limitCheck = await checkUsageLimits();
+  if (!limitCheck.allowed) {
+    return { success: false, error: limitCheck.reason };
+  }
+
+  const s = await loadAiSettings();
+
+  const buildOpenAIMessages = () => {
+    const out = [];
+    const systemParts = [];
+    if (agentProfile?.systemPrompt) systemParts.push(agentProfile.systemPrompt);
+    if (systemPrompt) systemParts.push(systemPrompt);
+    if (context) systemParts.push(`Context: ${context}`);
+    if (fileContent) systemParts.push(`Current file content:\n${fileContent.slice(0, 12000)}`);
+    if (systemParts.length) out.push({ role: 'system', content: systemParts.join('\n\n') });
+    messages.forEach(({ role, content }) => { if (role && content) out.push({ role, content }); });
+    return out;
+  };
+
+  try {
+    if (s.provider === 'openai' && s.openaiApiKey) {
+      const body = { model: s.openaiModel || 'gpt-4o-mini', messages: buildOpenAIMessages() };
+      const res = await axios.post('https://api.openai.com/v1/chat/completions', body, {
+        headers: { 'Authorization': `Bearer ${s.openaiApiKey}`, 'Content-Type': 'application/json' }
+      });
+      const content = res.data?.choices?.[0]?.message?.content ?? '';
+      const usage = res.data?.usage;
+      await recordUsage(usage?.prompt_tokens || 0, usage?.completion_tokens || 0);
+      return { success: true, data: { reply: content, content } };
+    }
+
+    if (s.provider === 'anthropic' && s.anthropicApiKey) {
+      const systemParts = [];
+      if (agentProfile?.systemPrompt) systemParts.push(agentProfile.systemPrompt);
+      if (systemPrompt) systemParts.push(systemPrompt);
+      if (context) systemParts.push(`Context: ${context}`);
+      if (fileContent) systemParts.push(`File:\n${fileContent.slice(0, 12000)}`);
+      const system = systemParts.filter(Boolean).join('\n\n');
+      const anthropicMessages = messages.map(({ role, content }) => ({ role: role === 'assistant' ? 'assistant' : 'user', content }));
+      const body = {
+        model: s.anthropicModel || 'claude-3-5-sonnet-20241022',
+        max_tokens: 4096,
+        system: system || undefined,
+        messages: anthropicMessages
+      };
+      const res = await axios.post('https://api.anthropic.com/v1/messages', body, {
+        headers: {
+          'x-api-key': s.anthropicApiKey,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json'
+        }
+      });
+      const content = res.data?.content?.[0]?.text ?? '';
+      const usage = res.data?.usage;
+      await recordUsage(usage?.input_tokens || 0, usage?.output_tokens || 0);
+      return { success: true, data: { reply: content, content } };
+    }
+
+    if (s.provider === 'google' && s.googleApiKey) {
+      const systemParts = [];
+      if (agentProfile?.systemPrompt) systemParts.push(agentProfile.systemPrompt);
+      if (systemPrompt) systemParts.push(systemPrompt);
+      if (context) systemParts.push(`Context: ${context}`);
+      if (fileContent) systemParts.push(`File:\n${fileContent.slice(0, 12000)}`);
+      const system = systemParts.filter(Boolean).join('\n\n');
+      const contents = [];
+      if (system) contents.push({ role: 'user', parts: [{ text: `System: ${system}` }] });
+      messages.forEach(({ role, content }) => {
+        contents.push({ role: role === 'assistant' ? 'model' : 'user', parts: [{ text: content }] });
+      });
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${s.googleModel || 'gemini-1.5-flash'}:generateContent?key=${s.googleApiKey}`;
+      const res = await axios.post(url, { contents }, { headers: { 'Content-Type': 'application/json' } });
+      const content = res.data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      const meta = res.data?.usageMetadata;
+      await recordUsage(meta?.promptTokenCount || 0, meta?.candidatesTokenCount || 0);
+      return { success: true, data: { reply: content, content } };
+    }
+
+    if (s.provider === 'local' && s.localType === 'ollama') {
+      const url = (s.localOllamaUrl || 'http://localhost:11434').replace(/\/$/, '');
+      const msgs = buildOpenAIMessages().filter(m => m.role !== 'system');
+      const system = buildOpenAIMessages().find(m => m.role === 'system')?.content;
+      const all = system ? [{ role: 'system', content: system }, ...msgs] : msgs;
+      const res = await axios.post(`${url}/api/chat`, {
+        model: s.localOllamaModel || 'llama3.2',
+        messages: all,
+        stream: false
+      });
+      const content = res.data?.message?.content ?? '';
+      await recordUsage(0, 0);
+      return { success: true, data: { reply: content, content } };
+    }
+
+    if ((s.provider === 'local' && s.localType === 'cyrex') || s.provider === 'cyrex') {
+      const baseUrl = (s.localCyrexUrl || AI_SERVICE_URL).replace(/\/$/, '');
+      const lastUser = [...messages].reverse().find(m => m.role === 'user');
+      const payload = {
+        prompt: lastUser?.content ?? '',
+        context: context ?? '',
+        file_content: fileContent?.slice(0, 8000) ?? '',
+        selection: null
+      };
+      if (agentProfile) {
+        payload.agent_id = agentProfile.id;
+        payload.agent_name = agentProfile.name;
+        payload.agent_tone = agentProfile.tone;
+        payload.agent_personality = agentProfile.personality;
+        if (agentProfile.systemPrompt) payload.agent_system_prompt = agentProfile.systemPrompt;
+      }
+      const res = await axios.post(`${baseUrl}/agent/chat`, payload, {
+        headers: { ...desktopHeaders, 'Content-Type': 'application/json' }
+      });
+      const reply = res.data?.reply ?? res.data?.content ?? res.data?.message ?? (typeof res.data === 'string' ? res.data : '');
+      await recordUsage(0, 0);
+      return { success: true, data: { reply, content: reply } };
+    }
+
+    return { success: false, error: 'No AI provider configured. Set an API key or local URL in Settings.' };
+  } catch (err) {
+    const msg = err.response?.data?.error?.message ?? err.response?.data?.message ?? err.message ?? 'Request failed';
+    return { success: false, error: String(msg) };
+  }
+});
+
+// --- Subagents (list / register with agent runtime) ---
+ipcMain.handle('list-agents', async () => {
+  const list = agentRuntime.listAgents();
+  return list.map((a) => ({ id: a.id, name: a.name, version: a.version, capabilities: a.capabilities }));
+});
+
+ipcMain.handle('register-agent', async (_event, { name, version = '1.0.0', capabilities = 0 }) => {
+  const { resolveCapabilities } = await import('./capabilities.js');
+  const capMask = typeof capabilities === 'number' ? capabilities : resolveCapabilities(capabilities);
+  const id = agentRuntime.registerAgent({ name: (name || 'subagent').slice(0, 63), version: (version || '1.0.0').slice(0, 15) }, capMask);
+  return { id, name: (name || 'subagent').slice(0, 63), version: (version || '1.0.0').slice(0, 15) };
+});
+
+ipcMain.handle('unregister-agent', async (_event, agentId) => {
+  if (Number(agentId) === ideAgentId) return { success: false, error: 'Cannot unregister IDE agent' };
+  agentRuntime.unregisterAgent(Number(agentId));
+  return { success: true };
+});
+
 // --- Fabric bus (in-process semantic routing) ---
 ipcMain.handle('fabric-send', async (event, { subject, data }) => {
   try {
@@ -375,7 +676,7 @@ ipcMain.handle('get-tasks', async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/tasks`, { headers: desktopHeaders });
     return { success: true, data: response.data || [] };
-  } catch (error) {
+  } catch {
     return { success: true, data: [] };
   }
 });
@@ -388,7 +689,7 @@ ipcMain.handle('create-task', async (event, { title, description = '', type = 'm
       { headers: desktopHeaders }
     );
     return { success: true, data: response.data };
-  } catch (error) {
+  } catch {
     const fallback = { id: `local-${Date.now()}`, title, description, task_type: type };
     return { success: true, data: fallback };
   }
@@ -403,7 +704,7 @@ ipcMain.handle('start-session', async (event, userId) => {
       { headers: desktopHeaders }
     );
     return response.data?.session_id || response.data?.id || `session-${Date.now()}`;
-  } catch (error) {
+  } catch {
     return `session-${Date.now()}`;
   }
 });
@@ -412,7 +713,7 @@ ipcMain.handle('end-session', async () => {
   try {
     await axios.post(`${API_BASE_URL}/sessions/end`, {}, { headers: desktopHeaders });
     return { success: true };
-  } catch (error) {
+  } catch {
     return { success: true };
   }
 });
@@ -424,7 +725,7 @@ ipcMain.handle('record-keystroke', async (event, { key, file, line, column }) =>
       { key, file, line, column },
       { headers: desktopHeaders }
     );
-  } catch (error) {
+  } catch {
     // no-op
   }
 });
@@ -436,7 +737,7 @@ ipcMain.handle('record-file-change', async (event, { file, changeType, details }
       { file, change_type: changeType, details },
       { headers: desktopHeaders }
     );
-  } catch (error) {
+  } catch {
     // no-op
   }
 });
@@ -489,7 +790,7 @@ async function searchInFolderRecursive(rootDir, query, opts, results, maxResults
   }
   const caseSensitive = opts?.caseSensitive ?? false;
   const wholeWord = opts?.wholeWord ?? false;
-  const q = caseSensitive ? query : query.toLowerCase();
+  const _q = caseSensitive ? query : query.toLowerCase();
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const re = wholeWord
     ? new RegExp(`\\b${escaped}\\b`, caseSensitive ? 'g' : 'gi')
@@ -536,6 +837,37 @@ ipcMain.handle('search-in-folder', async (event, rootDir, query, opts = {}) => {
 });
 
 // --- File system (for real file tree) ---
+async function listWorkspaceFilesRecursive(rootDir, relativeDir, out, maxFiles = 2000) {
+  if (out.length >= maxFiles) return;
+  let entries;
+  try {
+    entries = await readdir(rootDir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const e of entries) {
+    if (out.length >= maxFiles) break;
+    const fullPath = join(rootDir, e.name);
+    const rel = relativeDir ? `${relativeDir}/${e.name}` : e.name;
+    if (e.isDirectory()) {
+      if (SKIP_DIRS.has(e.name)) continue;
+      out.push({ path: fullPath, name: e.name, isDirectory: true, relativePath: rel });
+      await listWorkspaceFilesRecursive(fullPath, rel, out, maxFiles);
+    } else {
+      out.push({ path: fullPath, name: e.name, isDirectory: false, relativePath: rel });
+    }
+  }
+}
+
+ipcMain.handle('list-workspace-files', async (event, rootDir) => {
+  if (!rootDir) return { files: [], totalFiles: 0, totalFolders: 0 };
+  const files = [];
+  await listWorkspaceFilesRecursive(rootDir, '', files);
+  const totalFiles = files.filter((f) => !f.isDirectory).length;
+  const totalFolders = files.filter((f) => f.isDirectory).length;
+  return { files, totalFiles, totalFolders };
+});
+
 ipcMain.handle('list-directory', async (event, dirPath) => {
   try {
     const entries = await readdir(dirPath, { withFileTypes: true });
@@ -584,45 +916,61 @@ ipcMain.handle('rename-path', async (event, { oldPath, newName }) => {
   return { path: newPath };
 });
 
-// --- Run shell command (for Terminal panel) ---
-ipcMain.handle('run-command', async (event, { command, cwd }) => {
+// --- Run shell command (for Terminal panel; supports multiple terminals by terminalId) ---
+ipcMain.handle('run-command', async (event, { terminalId = 'default', command, cwd }) => {
   const workDir = cwd || projectRoot || process.cwd();
   const isWin = process.platform === 'win32';
   const cmd = isWin ? 'cmd' : 'bash';
   const args = isWin ? ['/c', command] : ['-c', command];
 
+  const existing = shellProcesses.get(terminalId);
+  if (existing) {
+    try { existing.kill('SIGTERM'); } catch { /* process may already be gone */ }
+    shellProcesses.delete(terminalId);
+  }
+
   return new Promise((resolve, reject) => {
-    shellProcess = spawn(cmd, args, {
+    const proc = spawn(cmd, args, {
       cwd: workDir,
       env: process.env,
       shell: false
     });
-    shellProcess.stdout.on('data', (data) => {
-      mainWindow?.webContents?.send('command-output', { type: 'stdout', text: data.toString() });
+    shellProcesses.set(terminalId, proc);
+    proc.stdout.on('data', (data) => {
+      mainWindow?.webContents?.send('command-output', { terminalId, type: 'stdout', text: data.toString() });
     });
-    shellProcess.stderr.on('data', (data) => {
-      mainWindow?.webContents?.send('command-output', { type: 'stderr', text: data.toString() });
+    proc.stderr.on('data', (data) => {
+      mainWindow?.webContents?.send('command-output', { terminalId, type: 'stderr', text: data.toString() });
     });
-    shellProcess.on('close', (code, signal) => {
-      shellProcess = null;
-      mainWindow?.webContents?.send('command-exit', { code, signal });
+    proc.on('close', (code, signal) => {
+      shellProcesses.delete(terminalId);
+      mainWindow?.webContents?.send('command-exit', { terminalId, code, signal });
       resolve({ code, signal });
     });
-    shellProcess.on('error', (err) => {
-      shellProcess = null;
-      mainWindow?.webContents?.send('command-exit', { code: -1, error: err.message });
+    proc.on('error', (err) => {
+      shellProcesses.delete(terminalId);
+      mainWindow?.webContents?.send('command-exit', { terminalId, code: -1, error: err.message });
       reject(err);
     });
   });
 });
 
-ipcMain.handle('cancel-command', async () => {
-  if (shellProcess) {
-    shellProcess.kill('SIGTERM');
-    shellProcess = null;
-    return { success: true };
+ipcMain.handle('cancel-command', async (_event, terminalId) => {
+  if (terminalId) {
+    const proc = shellProcesses.get(terminalId);
+    if (proc) {
+      try { proc.kill('SIGTERM'); } catch { /* ignore */ }
+      shellProcesses.delete(terminalId);
+      return { success: true };
+    }
+    return { success: false };
   }
-  return { success: false };
+  let cancelled = false;
+  for (const [id, proc] of shellProcesses) {
+    try { proc.kill('SIGTERM'); cancelled = true; } catch { /* ignore */ }
+    shellProcesses.delete(id);
+  }
+  return { success: cancelled };
 });
 
 ipcMain.handle('open-external', async (_event, url) => {
@@ -634,7 +982,7 @@ ipcMain.handle('award-points', async (event, points) => {
   try {
     await axios.post(`${API_BASE_URL}/gamification/award`, { points }, { headers: desktopHeaders });
     return { success: true };
-  } catch (error) {
+  } catch {
     return { success: true };
   }
 });
@@ -643,7 +991,7 @@ ipcMain.handle('get-gamification-state', async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/gamification/state`, { headers: desktopHeaders });
     return response.data || {};
-  } catch (error) {
+  } catch {
     return { points: 0, level: 1, streak: 0, badges: [] };
   }
 });
@@ -685,7 +1033,7 @@ ipcMain.handle('get-llm-hint', async (event, { task }) => {
       { headers: desktopHeaders }
     );
     return response.data?.hint || response.data || 'Hint unavailable';
-  } catch (error) {
+  } catch {
     return 'Hint generation unavailable';
   }
 });
@@ -698,7 +1046,7 @@ ipcMain.handle('complete-code', async (event, { code, language }) => {
       { headers: desktopHeaders }
     );
     return response.data?.completion ?? code;
-  } catch (error) {
+  } catch {
     return code;
   }
 });
