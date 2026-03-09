@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { api } from '../../api';
 
 function getFileIcon(name) {
   const ext = (name || '').split('.').pop() || '';
@@ -21,11 +22,11 @@ export default function WorkspaceView({
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
-    if (!projectRoot || !window.electronAPI?.listWorkspaceFiles) return;
+    if (!projectRoot) return;
     setLoading(true);
     try {
-      const data = await window.electronAPI.listWorkspaceFiles(projectRoot);
-      setList(data);
+      const data = await api.listWorkspaceFiles(projectRoot);
+      setList(data || { files: [], totalFiles: 0, totalFolders: 0 });
     } catch (e) {
       console.error(e);
     } finally {
