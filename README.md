@@ -33,6 +33,17 @@ After install, open **Deepiri Emotion** like any other app. Open a folder to sta
 
 ## Quick start
 
+### One-command full setup (install + build + get installers)
+
+From the repo root:
+
+```bash
+chmod +x scripts/setup-full.sh && ./scripts/setup-full.sh
+# Or: npm run setup
+```
+
+This installs dependencies, runs lint/tests, builds the app, and produces installers in `dist/`. The script then prints how to install or run the desktop app on your OS. See **[docs/setup.md](docs/setup.md)** for options (`--install-only`, `--skip-check`, etc.).
+
 ### Prerequisites
 
 - **Node.js** 18+ (20 recommended; use [.nvmrc](.nvmrc) with nvm).
@@ -99,6 +110,7 @@ deepiri-emotion-desktop/
 
 | Doc | Content |
 |-----|---------|
+| **[docs/setup.md](docs/setup.md)** | **Full setup guide** — prerequisites, clone, dev run, build, optional backends, env, Tauri, verify. |
 | **[docs/install.md](docs/install.md)** | Installers, dev setup, optional backends (Platform API, Cyrex, Helox). |
 | **[docs/architecture.md](docs/architecture.md)** | Tech stack, main vs renderer, security, packaging. |
 | **[docs/refactoring.md](docs/refactoring.md)** | Plan for merging Cyrex UI and Helox into the IDE. |
