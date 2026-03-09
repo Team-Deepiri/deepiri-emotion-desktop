@@ -7,7 +7,6 @@ import TaskManager from './components/TaskManager';
 import AIAssistant from './components/AIAssistant';
 import Settings from './components/Settings';
 import ApiModelsPage from './components/ApiModelsPage';
-import IntegrationPanel from './components/IntegrationPanel';
 import MissionCard from './components/MissionCard';
 import CyrexEmbed from './components/CyrexEmbed';
 import PipelinesView from './components/PipelinesView';
@@ -61,6 +60,7 @@ import { classifySelection } from './services/classificationService';
 import { runOrPreview } from './services/runPreviewService';
 import { runHooks, HOOK_NAMES } from './services/hooksRegistry';
 import { registerBuiltinTools } from './services/toolsRegistry';
+import { api, getElectronAPI } from './api';
 
 let tabIdCounter = 0;
 function nextTabId() {
@@ -125,42 +125,55 @@ const App = () => {
   }, [activeTab?.name, projectRoot]);
 
   useEffect(() => {
-    if (window.electronAPI?.getProjectRoot) {
-      window.electronAPI.getProjectRoot().then((root) => root && setProjectRoot(root));
-    }
+    api.getProjectRoot().then((root) => root && setProjectRoot(root)).catch(() => {});
   }, []);
 
   useEffect(() => {
-    const unsubSettings = window.electronAPI?.onMenuSettings?.(() => setCurrentView('settings'));
-    return () => unsubSettings?.();
+    const unsubSettings = api.onMenuSettings(() => setCurrentView('settings'));
+    return () => unsubSettings();
   }, []);
 
   useEffect(() => {
-    const unsubNewFile = window.electronAPI?.onMenuNewFile?.(() => handleNewFile());
-    return () => unsubNewFile?.();
+    const unsubNewFile = api.onMenuNewFile(() => handleNewFile());
+    return () => unsubNewFile();
   }, [handleNewFile]);
 
   useEffect(() => {
-    const unsubOpenFolder = window.electronAPI?.onMenuOpenFolder?.(() => handleOpenFolder());
-    return () => unsubOpenFolder?.();
+    const unsubOpenFolder = api.onMenuOpenFolder(() => handleOpenFolder());
+    return () => unsubOpenFolder();
   }, [handleOpenFolder]);
 
   useEffect(() => {
-    const unsubSave = window.electronAPI?.onMenuSave?.(() => saveActiveTab());
-    return () => unsubSave?.();
+    const unsubSave = api.onMenuSave(() => saveActiveTab());
+    return () => unsubSave();
   }, [saveActiveTab]);
 
   useEffect(() => {
-    const unsubAbout = window.electronAPI?.onMenuAbout?.(() => setShowAbout(true));
-    return () => unsubAbout?.();
+    const unsubAbout = api.onMenuAbout(() => setShowAbout(true));
+    return () => unsubAbout();
   }, []);
 
   useEffect(() => {
-    if (!window.electronAPI?.onCommandOutput || !window.electronAPI?.onCommandExit) return;
-    const unsubOut = window.electronAPI.onCommandOutput(({ type, text }) => {
+    const unsub = api.onOpenFileFromCli((filePath) => {
+      if (!filePath || !openFileInEditor) return;
+      const name = filePath.replace(/\\/g, '/').split('/').filter(Boolean).pop() || 'file';
+      openFileInEditor({ path: filePath, name });
+    });
+    return () => unsub();
+  }, [openFileInEditor]);
+
+  useEffect(() => {
+    const unsub = api.onProjectRootChanged((path) => {
+      if (path) setProjectRoot(path);
+    });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    const unsubOut = api.onCommandOutput(({ type, text }) => {
       setOutputLogs((prev) => [...prev.slice(-999), { type, text }]);
     });
-    const unsubExit = window.electronAPI.onCommandExit(() => {
+    const unsubExit = api.onCommandExit(() => {
       setOutputLogs((prev) => [...prev, { type: 'system', text: '--- Command finished ---\n' }]);
     });
     return () => {
@@ -170,8 +183,8 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (showAbout && window.electronAPI?.getAppVersion) {
-      window.electronAPI.getAppVersion().then((v) => setAppVersion(v || '1.0.0'));
+    if (showAbout) {
+      api.getAppVersion().then((v) => setAppVersion(v || '1.0.0')).catch(() => {});
     }
   }, [showAbout]);
 
@@ -202,9 +215,8 @@ const App = () => {
   const _initializeApp = async () => {
     try {
       const userId = localStorage.getItem('user_id') || 'default_user';
-      const session = await window.electronAPI.startSession(userId);
+      const session = await api.startSession(userId);
       setSessionId(session);
-      
       loadFiles();
       loadChallenges();
     } catch (error) {
@@ -214,7 +226,7 @@ const App = () => {
 
   const loadFiles = async () => {
     try {
-      const result = await window.electronAPI.getTasks();
+      const result = await api.getTasks();
       if (result.success && result.data) {
         const taskFiles = result.data.map(task => ({
           name: task.title,
@@ -288,7 +300,7 @@ const App = () => {
 
   const loadChallenges = async () => {
     try {
-      const result = await window.electronAPI.apiRequest({
+      const result = await api.apiRequest({
         method: 'GET',
         endpoint: '/challenges'
       });
@@ -307,7 +319,7 @@ const App = () => {
       // If file has a path, try to load it
       if (file.path && !content) {
         try {
-          content = await window.electronAPI.openFile(file.path);
+          content = await api.openFile(file.path);
         } catch (error) {
           console.error('Error loading file:', error);
         }
@@ -378,7 +390,7 @@ const App = () => {
   const switchView = (view) => {
     setCurrentView(view);
     document.querySelectorAll('.sidebar-content').forEach(el => el.classList.add('hidden'));
-    const sidebarId = view === 'workspace' ? 'explorer-view' : `${view}-view`;
+    const sidebarId = view === 'workspace' ? 'explorer-view' : view === 'integrations' ? 'extensions-view' : `${view}-view`;
     const targetView = document.getElementById(sidebarId);
     if (targetView) {
       targetView.classList.remove('hidden');
@@ -387,7 +399,7 @@ const App = () => {
 
   const handleOpenFolder = useCallback(async () => {
     try {
-      const root = await window.electronAPI.openProject();
+      const root = await api.openProject();
       setProjectRoot(root);
       if (root && window.recentService) window.recentService.addRecentFolder(root);
     } catch (e) {
@@ -404,7 +416,7 @@ const App = () => {
     }
     let content = '';
     try {
-      content = await window.electronAPI.openFile(entry.path);
+      content = await api.openFile(entry.path);
     } catch (e) {
       content = `// Error loading file: ${e.message}`;
     }
@@ -443,7 +455,7 @@ const App = () => {
     if (!tab?.path || tab.path.startsWith('/tasks/')) return;
     try {
       await runHooks(HOOK_NAMES.BEFORE_SAVE, { path: tab.path, content: tab.content });
-      await window.electronAPI.saveFile({ path: tab.path, content: tab.content });
+      await api.saveFile({ path: tab.path, content: tab.content });
       setOpenTabs((prev) =>
         prev.map((t) => (t.id === activeTabId ? { ...t, dirty: false } : t))
       );
@@ -465,42 +477,42 @@ const App = () => {
       const path = projectRoot.replace(/\\/g, '/').replace(/\/$/, '') + '/' + name.trim();
       const dir = path.split('/').slice(0, -1).join('/');
       const fileName = path.split('/').pop();
-      await window.electronAPI.createFile({ dirPath: dir, name: fileName });
+      await api.createFile({ dirPath: dir, name: fileName });
       setWorkspaceRefreshTrigger((t) => t + 1);
       await openFileInEditor({ path, name: fileName });
     } catch (e) {
       console.error(e);
-      if (window.toast || window.electronAPI?.showError) {
-        (window.toast || window.electronAPI.showError)(e.message || 'Failed to create file');
-      }
+      if (window.toast) window.toast(e.message || 'Failed to create file');
+      else getElectronAPI()?.showError?.(e.message || 'Failed to create file');
     }
   }, [projectRoot, openFileInEditor, handleOpenFolder]);
 
   const handleNewFolder = useCallback(async () => {
-    if (!projectRoot || !window.electronAPI?.createFolder) return;
+    if (!projectRoot) return;
     const name = window.prompt('Folder name:');
     if (!name?.trim()) return;
     try {
-      await window.electronAPI.createFolder({ dirPath: projectRoot, name: name.trim() });
-      const r = await window.electronAPI?.getProjectRoot?.();
+      await api.createFolder({ dirPath: projectRoot, name: name.trim() });
+      const r = await api.getProjectRoot();
       if (r) setProjectRoot(r);
       setWorkspaceRefreshTrigger((t) => t + 1);
       if (window.toast) window.toast('Folder created.');
     } catch (e) {
-      (window.toast || window.electronAPI?.showError)?.(e?.message || 'Failed to create folder');
+      if (window.toast) window.toast(e?.message || 'Failed to create folder');
+      else getElectronAPI()?.showError?.(e?.message || 'Failed to create folder');
     }
   }, [projectRoot]);
 
   const handleNewFileFromTemplate = useCallback(async (filename, content) => {
-    if (!projectRoot || !window.electronAPI?.createFile) return;
+    if (!projectRoot) return;
     try {
       const sep = projectRoot.includes('\\') ? '\\' : '/';
       const path = `${projectRoot.replace(/[/\\]+$/, '')}${sep}${filename.replace(/^\//, '')}`;
       const parts = path.replace(/\\/g, '/').split('/');
       const name = parts.pop();
       const dirPath = parts.join(sep);
-      await window.electronAPI.createFile({ dirPath, name });
-      if (window.electronAPI.saveFile) await window.electronAPI.saveFile(path, content);
+      await api.createFile({ dirPath, name });
+      await api.saveFile(path, content);
       setWorkspaceRefreshTrigger((t) => t + 1);
       await openFileInEditor({ path, name });
     } catch (e) {
@@ -793,7 +805,7 @@ const App = () => {
         <div 
           className={`activity-item ${currentView === 'extensions' ? 'active' : ''}`}
           onClick={() => switchView('extensions')}
-          title="Extensions"
+          title="Integrations"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
@@ -835,14 +847,14 @@ const App = () => {
             onOpenFolder={handleOpenFolder}
             onNewFile={handleNewFile}
             onNewFolder={handleNewFolder}
-            onRefresh={() => window.electronAPI?.getProjectRoot().then((r) => r && setProjectRoot(r))}
+            onRefresh={() => api.getProjectRoot().then((r) => r && setProjectRoot(r)).catch(() => {})}
           />
           {projectRoot ? (
             <WorkspaceFileExplorer
               projectRoot={projectRoot}
               selectedPath={activeTab?.path}
               onSelectFile={openFileInEditor}
-              onRefresh={() => window.electronAPI?.getProjectRoot().then((r) => r && setProjectRoot(r))}
+              onRefresh={() => api.getProjectRoot().then((r) => r && setProjectRoot(r)).catch(() => {})}
               refreshTrigger={workspaceRefreshTrigger}
             />
           ) : (
@@ -880,13 +892,6 @@ const App = () => {
             <span>GAMIFICATION</span>
           </div>
           <GamificationWidget />
-        </div>
-
-        <div className="sidebar-content hidden" id="integrations-view">
-          <div className="sidebar-header">
-            <span>INTEGRATIONS</span>
-          </div>
-          <IntegrationPanel />
         </div>
 
         <div className="sidebar-content hidden" id="cyrex-view">
@@ -935,7 +940,7 @@ const App = () => {
 
         <div className="sidebar-content hidden" id="extensions-view">
           <div className="sidebar-header">
-            <span>EXTENSIONS</span>
+            <span>INTEGRATIONS</span>
           </div>
           <ExtensionsPanel />
         </div>
@@ -1007,12 +1012,12 @@ const App = () => {
             ) : currentView === 'visual' ? (
               <VisualCanvas
                 onExportToFile={async (filename, content) => {
-                  if (window.electronAPI?.createFile && projectRoot) {
+                  if (projectRoot) {
                     try {
                       const sep = projectRoot.includes('\\') ? '\\' : '/';
                       const path = `${projectRoot}${sep}${filename}`;
-                      await window.electronAPI.createFile({ dirPath: projectRoot, name: filename });
-                      if (window.electronAPI.saveFile) await window.electronAPI.saveFile(path, content);
+                      await api.createFile({ dirPath: projectRoot, name: filename });
+                      await api.saveFile(path, content);
                       openFileInEditor({ path, name: filename });
                     } catch (e) {
                       navigator.clipboard?.writeText(content);
@@ -1125,7 +1130,7 @@ const App = () => {
                 onSave={async () => {
                   if (activeFile.path) {
                     try {
-                      await window.electronAPI.saveFile(activeFile.path, activeFile.content || '');
+                      await api.saveFile(activeFile.path, activeFile.content || '');
                       recordFileChange(activeFile.path, 'save', {});
                     } catch (error) {
                       console.error('Error saving file:', error);
@@ -1149,7 +1154,7 @@ const App = () => {
                 recentFiles={recentFiles}
                 onOpenRecentFolder={async (path) => {
                   try {
-                    await window.electronAPI?.setProjectRoot?.(path);
+                    await api.setProjectRoot(path);
                     setProjectRoot(path);
                   } catch (e) {
                     console.error(e);
@@ -1163,6 +1168,7 @@ const App = () => {
             <div className="ai-assistant-panel">
               {activeTab ? (
                 <AIChatPanel
+                  projectRoot={projectRoot}
                   currentFile={activeTab}
                   currentContent={activeTab.content}
                   selection={editorSelection}

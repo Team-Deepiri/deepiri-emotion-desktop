@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useEmotion } from './EmotionContext.jsx';
 import { PREDEFINED_AGENTS } from './predefinedAgents.js';
+import { api } from '../../api';
 import './emotion.css';
 
 export default function EmotionPanel({ onOpenAIChat }) {
@@ -28,9 +29,7 @@ export default function EmotionPanel({ onOpenAIChat }) {
   const [subagentAdding, setSubagentAdding] = useState(false);
 
   const loadRuntimeAgents = () => {
-    if (window.electronAPI?.listAgents) {
-      window.electronAPI.listAgents().then((list) => setRuntimeAgents(list || []));
-    }
+    api.listAgents().then((list) => setRuntimeAgents(list || [])).catch(() => setRuntimeAgents([]));
   };
 
   useEffect(() => {
@@ -39,10 +38,10 @@ export default function EmotionPanel({ onOpenAIChat }) {
 
   const handleRegisterSubagent = async () => {
     const name = (subagentName || '').trim();
-    if (!name || !window.electronAPI?.registerAgent) return;
+    if (!name) return;
     setSubagentAdding(true);
     try {
-      await window.electronAPI.registerAgent({ name, version: '1.0.0' });
+      await api.registerAgent({ name, version: '1.0.0' });
       setSubagentName('');
       loadRuntimeAgents();
     } catch (e) {
@@ -52,9 +51,8 @@ export default function EmotionPanel({ onOpenAIChat }) {
   };
 
   const handleUnregisterSubagent = async (id) => {
-    if (!window.electronAPI?.unregisterAgent) return;
     try {
-      await window.electronAPI.unregisterAgent(id);
+      await api.unregisterAgent(id);
       loadRuntimeAgents();
     } catch (e) {
       console.error(e);

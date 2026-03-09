@@ -1,21 +1,24 @@
 // Prevents additional console window on Windows in release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod commands;
+mod file_system;
 mod gamification;
 mod integrations;
 mod local_llm;
 mod session_recorder;
-mod commands;
 
 use tauri::{Manager, Window};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use sqlx::SqlitePool;
+use file_system::*;
 use gamification::GamificationEngine;
 use integrations::IntegrationService;
 use local_llm::LLMManager;
 use session_recorder::SessionRecorder;
 use commands::*;
+use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Task {
@@ -36,12 +39,14 @@ struct Challenge {
     time_limit: i32,
 }
 
-struct AppState {
+pub struct AppState {
     db: Mutex<Option<SqlitePool>>,
     gamification: Mutex<Option<GamificationEngine>>,
     integrations: Mutex<IntegrationService>,
     llm: Mutex<LLMManager>,
     recorder: Mutex<SessionRecorder>,
+    project_root: Mutex<Option<String>>,
+    config_path: Mutex<Option<PathBuf>>,
 }
 
 
@@ -103,6 +108,13 @@ async fn init_db() -> Result<SqlitePool, sqlx::Error> {
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
+            let config_path = app.path_resolver()
+                .app_data_dir()
+                .map(|d| {
+                    let _ = std::fs::create_dir_all(&d);
+                    d.join("deepiri_ai_settings.json")
+                })
+                .ok();
             tauri::async_runtime::block_on(async {
                 let db = match init_db().await {
                     Ok(pool) => {
@@ -113,6 +125,8 @@ fn main() {
                             integrations: Mutex::new(IntegrationService::new()),
                             llm: Mutex::new(LLMManager::new()),
                             recorder: Mutex::new(SessionRecorder::new()),
+                            project_root: Mutex::new(None),
+                            config_path: Mutex::new(config_path),
                         });
                     }
                     Err(e) => {
@@ -123,6 +137,8 @@ fn main() {
                             integrations: Mutex::new(IntegrationService::new()),
                             llm: Mutex::new(LLMManager::new()),
                             recorder: Mutex::new(SessionRecorder::new()),
+                            project_root: Mutex::new(None),
+                            config_path: Mutex::new(config_path),
                         });
                     }
                 }
@@ -140,8 +156,19 @@ fn main() {
             complete_code,
             start_session,
             record_keystroke,
+            record_file_change,
             end_session,
-            api_request
+            api_request,
+            get_project_root,
+            set_project_root,
+            get_ai_settings,
+            set_ai_settings,
+            open_file,
+            save_file,
+            list_directory,
+            list_workspace_files,
+            create_file,
+            create_folder,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

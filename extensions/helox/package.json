@@ -1,0 +1,8 @@
+{
+  "name": "helox",
+  "displayName": "Helox Pipelines",
+  "description": "Run training and RAG pipelines from the IDE with live output.",
+  "version": "1.0.0",
+  "main": "",
+  "contributes": {}
+}

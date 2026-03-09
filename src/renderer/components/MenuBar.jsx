@@ -55,7 +55,7 @@ export default function MenuBar({ onCommand }) {
         { id: 'outline', label: 'Outline' },
         { id: 'focus-search', label: 'Search in Files', shortcut: 'Ctrl+Shift+F' },
         { id: 'keybindings', label: 'Keyboard Shortcuts' },
-        { id: 'extensions', label: 'Extensions' },
+        { id: 'extensions', label: 'Integrations' },
         { type: 'divider' },
         { id: 'settings', label: 'Settings' }
       ]

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNotifications } from '../../context/NotificationContext';
 import VoiceInput from '../multimodal/VoiceInput';
 import { setEmotionalStateFromChat } from '../emotion/emotionService';
+import { api } from '../../api';
 
 /**
  * Cursor-style context-aware AI chat: knows current file and selection.
@@ -17,7 +18,10 @@ function modelLabel(aiSettings) {
   return p;
 }
 
+const DEFAULT_SESSION = 'default';
+
 export default function AIChatPanel({
+  projectRoot = null,
   currentFile = null,
   currentContent = '',
   selection = null,
@@ -27,19 +31,37 @@ export default function AIChatPanel({
   onInsertAtCursor,
   onShowDiff
 }) {
+  const sessionId = projectRoot || DEFAULT_SESSION;
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [aiSettings, setAiSettings] = useState(null);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const endRef = useRef(null);
   const inputRef = useRef(null);
   const { success, error } = useNotifications();
 
   useEffect(() => {
-    if (window.electronAPI?.getAiSettings) {
-      window.electronAPI.getAiSettings().then((s) => s && setAiSettings(s));
-    }
+    api.getAiSettings().then((s) => s && setAiSettings(s)).catch(() => {});
   }, []);
+
+  const sessionIdRef = useRef(sessionId);
+  useEffect(() => {
+    if (sessionIdRef.current !== sessionId) {
+      sessionIdRef.current = sessionId;
+      setHistoryLoaded(false);
+    }
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (historyLoaded) return;
+    setHistoryLoaded(true);
+    api.getChatHistory(sessionId, 50).then((res) => {
+      if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+        setMessages(res.data.map((row) => ({ role: row.role, content: row.content })));
+      }
+    }).catch(() => {});
+  }, [sessionId, historyLoaded]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -65,71 +87,39 @@ export default function AIChatPanel({
     setMessages((prev) => [...prev, { role: 'user', content: text }]);
     setInput('');
     setLoading(true);
+    api.appendChatMessage({ role: 'user', content: text, sessionId }).catch(() => {});
 
     try {
-      const api = window.electronAPI;
-      const useUnified = api?.chatCompletion;
-
-      if (useUnified) {
-        const messagesForApi = [...messages, { role: 'user', content: text }];
-        const res = await api.chatCompletion({
+      const messagesForApi = [...messages, { role: 'user', content: text }];
+      const res = await api.chatCompletion({
           messages: messagesForApi,
           context: contextSummary,
           fileContent: (currentContent || '').slice(0, 12000),
-          agentProfile: agentProfile ? {
-            id: agentProfile.id,
-            name: agentProfile.name,
-            tone: agentProfile.tone,
-            personality: agentProfile.personality,
-            systemPrompt: agentProfile.systemPrompt
-          } : null
-        });
-
-        if (!res.success) {
-          setMessages((prev) => [...prev, { role: 'assistant', content: `Error: ${res.error || 'Request failed'}` }]);
-          error(res.error || 'Request failed');
-          return;
-        }
-
-        const reply = res?.data?.reply ?? res?.data?.content ?? '';
-        setMessages((prev) => [...prev, { role: 'assistant', content: reply, raw: res?.data }]);
-        const sentiment = typeof reply === 'string' && (reply.length > 100 || /\b(great|thanks|helpful|perfect)\b/i.test(reply)) ? 0.3 : 0;
-        setEmotionalStateFromChat({ sentiment, messageLength: reply?.length || 0 });
-        return;
-      }
-
-      if (!api?.aiRequest) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: 'AI not configured. Open API & Model (activity bar) or Settings → AI Provider and set an API key or local URL (e.g. Cyrex/Ollama).' }]);
-        return;
-      }
-
-      const payload = {
-        prompt: text,
-        context: contextSummary,
-        file_content: (currentContent || '').slice(0, 8000),
-        selection: selection || null
-      };
-      if (agentProfile) {
-        payload.agent_id = agentProfile.id;
-        payload.agent_name = agentProfile.name;
-        payload.agent_tone = agentProfile.tone;
-        payload.agent_personality = agentProfile.personality;
-        if (agentProfile.systemPrompt) payload.agent_system_prompt = agentProfile.systemPrompt;
-      }
-
-      const res = await api.aiRequest({
-        endpoint: '/agent/chat',
-        data: payload
+        agentProfile: agentProfile ? {
+          id: agentProfile.id,
+          name: agentProfile.name,
+          tone: agentProfile.tone,
+          personality: agentProfile.personality,
+          systemPrompt: agentProfile.systemPrompt
+        } : null
       });
 
-      const reply = res?.data?.reply ?? res?.data?.content ?? res?.data?.message ?? (typeof res?.data === 'string' ? res.data : 'No response.');
+      if (!res?.success) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: `Error: ${res?.error || 'Request failed'}` }]);
+        error(res?.error || 'Request failed');
+        return;
+      }
+
+      const reply = res?.data?.reply ?? res?.data?.content ?? '';
       setMessages((prev) => [...prev, { role: 'assistant', content: reply, raw: res?.data }]);
+      api.appendChatMessage({ role: 'assistant', content: reply, sessionId }).catch(() => {});
       const sentiment = typeof reply === 'string' && (reply.length > 100 || /\b(great|thanks|helpful|perfect)\b/i.test(reply)) ? 0.3 : 0;
       setEmotionalStateFromChat({ sentiment, messageLength: reply?.length || 0 });
     } catch (err) {
       const msg = err?.response?.data?.detail ?? err?.message ?? 'Request failed.';
-      setMessages((prev) => [...prev, { role: 'assistant', content: `Error: ${msg}` }]);
-      error(msg);
+      const display = msg.includes('not available') ? 'AI not configured. Open Settings → AI Provider and set an API key or local URL (e.g. Cyrex/Ollama).' : msg;
+      setMessages((prev) => [...prev, { role: 'assistant', content: `Error: ${display}` }]);
+      error(display);
     } finally {
       setLoading(false);
     }
@@ -142,6 +132,12 @@ export default function AIChatPanel({
     }
   };
 
+  const handleClearHistory = () => {
+    api.clearChatHistory(sessionId).catch(() => {});
+    setMessages([]);
+    success('Chat history cleared');
+  };
+
   return (
     <div className="ai-chat-panel">
       <div className="ai-chat-header">
@@ -152,6 +148,9 @@ export default function AIChatPanel({
             Model: {modelLabel(aiSettings)}
           </span>
         )}
+        <button type="button" className="ai-chat-clear-history" onClick={handleClearHistory} title="Clear saved chat history for this session">
+          Clear history
+        </button>
       </div>
       <div className="ai-chat-messages">
         {messages.length === 0 && (

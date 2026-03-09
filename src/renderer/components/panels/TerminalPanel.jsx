@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { api } from '../../api';
 
 function SingleTerminal({ terminalId, name, output, running, cwd, projectRoot, onSubmit, onClear, onCancel }) {
   const [input, setInput] = useState('');
@@ -11,7 +12,7 @@ function SingleTerminal({ terminalId, name, output, running, cwd, projectRoot, o
   const handleSubmit = async (e) => {
     e.preventDefault();
     const cmd = input.trim();
-    if (!cmd || running || !window.electronAPI?.runCommand) return;
+    if (!cmd || running) return;
     onSubmit(cmd);
     setInput('');
   };
@@ -69,14 +70,13 @@ export default function TerminalPanel({ projectRoot }) {
   }, [projectRoot]);
 
   useEffect(() => {
-    if (!window.electronAPI?.onCommandOutput || !window.electronAPI?.onCommandExit) return;
-    const unsubOut = window.electronAPI.onCommandOutput(({ terminalId, type, text }) => {
+    const unsubOut = api.onCommandOutput(({ terminalId, type, text }) => {
       const tid = terminalId ?? 'default';
       setTerminals((prev) =>
         prev.map((t) => (t.id === tid ? { ...t, output: [...t.output, { type, text }] } : t))
       );
     });
-    const unsubExit = window.electronAPI.onCommandExit(({ terminalId }) => {
+    const unsubExit = api.onCommandExit(({ terminalId }) => {
       const tid = terminalId ?? 'default';
       setTerminals((prev) =>
         prev.map((t) => (t.id === tid ? { ...t, running: false } : t))
@@ -97,7 +97,7 @@ export default function TerminalPanel({ projectRoot }) {
         t.id === terminalId ? { ...t, output: [...t.output, { type: 'input', text: `$ ${cmd}` }], running: true } : t
       )
     );
-    window.electronAPI?.runCommand?.({ terminalId, command: cmd, cwd: cwd || undefined }).catch((err) => {
+    api.runCommand({ terminalId, command: cmd, cwd: cwd || undefined }).catch((err) => {
       setTerminals((prev) =>
         prev.map((t) =>
           t.id === terminalId
@@ -113,7 +113,7 @@ export default function TerminalPanel({ projectRoot }) {
   };
 
   const handleCancel = (terminalId) => {
-    window.electronAPI?.cancelCommand?.(terminalId);
+    api.cancelCommand(terminalId).catch(() => {});
   };
 
   const addTerminal = () => {

@@ -346,17 +346,38 @@
 .keybindings-keys { color: var(--tab-inactiveForeground); font-family: var(--font-mono); font-size: var(--font-size-caption); }
 .keybindings-category { color: var(--tab-inactiveForeground); font-size: var(--font-size-caption); }
 
-/* Extensions */
+/* Integrations (Extensions panel) */
 .extensions-panel { padding: 16px; }
-.extensions-header { font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+.extensions-header { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.extensions-subtitle { font-size: var(--font-size-small); color: var(--tab-inactiveForeground); margin-bottom: 12px; }
 .extensions-list { margin-bottom: 16px; }
 .extensions-section-title { font-size: var(--font-size-caption); text-transform: uppercase; color: var(--tab-inactiveForeground); margin-bottom: 8px; }
 .extensions-item { padding: 10px 0; border-bottom: 1px solid var(--tab-border); }
 .extensions-item-name { font-weight: 600; font-size: var(--font-size); color: var(--tab-activeForeground); }
 .extensions-item-desc { font-size: var(--font-size-small); color: var(--tab-inactiveForeground); margin-top: 4px; }
 .extensions-item-badge { font-size: 10px; color: var(--success-foreground); margin-left: 8px; }
+.extensions-item-category { font-size: 10px; color: var(--tab-inactiveForeground); margin-left: 8px; padding: 2px 6px; background: var(--tab-border); border-radius: 4px; }
+.extensions-item-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.extensions-item-main { flex: 1; min-width: 0; }
+.extensions-item-actions { flex-shrink: 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.extensions-btn { padding: 6px 12px; font-size: var(--font-size-caption); border-radius: 4px; cursor: pointer; border: 1px solid var(--tab-border); background: var(--tab-inactiveForeground); color: var(--sidebar-background); }
+.extensions-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.extensions-btn-primary { background: var(--accent-color, #0e639c); color: #fff; border-color: var(--accent-color, #0e639c); }
+.extensions-btn-secondary { background: transparent; color: var(--tab-activeForeground); }
+.extensions-list-available { margin-top: 16px; }
+.extensions-available-grid { max-height: 420px; overflow-y: auto; }
 .extensions-placeholder { color: var(--tab-inactiveForeground); font-size: var(--font-size-small); }
 .extensions-hint { margin-top: 8px; color: var(--tab-inactiveForeground); }
+.extensions-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10001; }
+.extensions-modal { background: var(--sidebar-background); padding: 20px; border-radius: 8px; min-width: 320px; max-width: 90vw; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.extensions-modal-wide { min-width: 400px; }
+.extensions-modal h4 { margin: 0 0 12px; font-size: var(--font-size); }
+.extensions-input { width: 100%; padding: 8px 12px; margin: 8px 0; border: 1px solid var(--tab-border); border-radius: 4px; background: var(--input-background); color: var(--input-foreground); font-size: var(--font-size); }
+.extensions-modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.extensions-sync-list { max-height: 200px; overflow-y: auto; margin: 12px 0; }
+.extensions-sync-item { padding: 6px 0; border-bottom: 1px solid var(--tab-border); font-size: var(--font-size-small); }
+.extensions-sync-title { color: var(--tab-activeForeground); }
+.extensions-error { color: var(--error-foreground, #f14c4c); margin: 8px 0; }
 
 /* Notifications (toast) */
 .notifications-container {

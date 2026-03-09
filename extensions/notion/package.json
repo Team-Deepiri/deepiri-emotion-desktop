@@ -1,0 +1,8 @@
+{
+  "name": "notion",
+  "displayName": "Notion",
+  "description": "Connect tasks and docs to Notion.",
+  "version": "1.0.0",
+  "main": "",
+  "contributes": {}
+}

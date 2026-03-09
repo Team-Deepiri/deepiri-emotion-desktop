@@ -217,6 +217,61 @@ pub async fn record_keystroke(
 }
 
 #[tauri::command]
+pub async fn record_file_change(
+    file: String,
+    change_type: String,
+    details: Option<serde_json::Value>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let mut recorder = state.recorder.lock().unwrap();
+    recorder.record_file_change(file, change_type, details.unwrap_or(serde_json::Value::Null));
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_project_root(state: State<'_, AppState>) -> Result<Option<String>, String> {
+    let root = state.project_root.lock().unwrap();
+    Ok(root.clone())
+}
+
+#[tauri::command]
+pub async fn set_project_root(path: Option<String>, state: State<'_, AppState>) -> Result<(), String> {
+    let mut root = state.project_root.lock().unwrap();
+    *root = path;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_ai_settings(state: State<'_, AppState>) -> Result<serde_json::Value, String> {
+    let path_guard = state.config_path.lock().unwrap();
+    let path = match path_guard.as_ref() {
+        Some(p) => p.clone(),
+        None => return Ok(serde_json::json!({})),
+    };
+    drop(path_guard);
+    let contents = match tokio::fs::read_to_string(&path).await {
+        Ok(c) => c,
+        Err(_) => return Ok(serde_json::json!({})),
+    };
+    Ok(serde_json::from_str(&contents).unwrap_or(serde_json::json!({})))
+}
+
+#[tauri::command]
+pub async fn set_ai_settings(settings: serde_json::Value, state: State<'_, AppState>) -> Result<(), String> {
+    let path_guard = state.config_path.lock().unwrap();
+    let path = match path_guard.as_ref() {
+        Some(p) => p.clone(),
+        None => return Err("Config path not set".to_string()),
+    };
+    drop(path_guard);
+    let contents = serde_json::to_string_pretty(&settings).map_err(|e| e.to_string())?;
+    if let Some(parent) = path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    tokio::fs::write(&path, contents).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn end_session(
     state: State<'_, AppState>,
 ) -> Result<serde_json::Value, String> {

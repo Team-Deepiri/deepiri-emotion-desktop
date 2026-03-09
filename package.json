@@ -16,6 +16,8 @@
     "url": "https://github.com/deepiri/deepiri-ide-desktop/issues"
   },
   "scripts": {
+    "cli": "node cli/index.js",
+    "cli:dev": "node --watch cli/index.js",
     "start": "electron .",
     "start:prod": "npm run build:renderer && electron .",
     "dev": "electron . --dev",
@@ -26,12 +28,14 @@
     "build:win": "npm run build:icons && npm run build:renderer && electron-builder --win",
     "build:mac": "npm run build:icons && npm run build:renderer && electron-builder --mac",
     "build:linux": "npm run build:icons && npm run build:renderer && electron-builder --linux",
-    "test": "vitest run",
+    "test": "vitest run && vitest run --config vitest.config.node.js",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
-    "check": "npm run lint && npm test && npm run build:renderer"
+    "lint": "eslint src cli",
+    "lint:fix": "eslint src cli --fix",
+    "check": "npm run lint && npm test && npm run build:renderer",
+    "setup": "bash scripts/setup-full.sh",
+    "setup:install": "bash scripts/setup-full.sh --install-only"
   },
   "keywords": [
     "productivity",
@@ -45,9 +49,12 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "axios": "^1.6.0",
+    "chalk": "^5.3.0",
+    "ink": "^4.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "socket.io-client": "^4.7.4"
+    "socket.io-client": "^4.7.4",
+    "sql.js": "^1.14.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
@@ -57,6 +64,7 @@
     "@vitest/coverage-v8": "^2.1.9",
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1",
+    "esbuild": "^0.24.0",
     "eslint": "^9.15.0",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
@@ -81,7 +89,12 @@
       "src/**/*",
       "dist-renderer/**",
       "assets/**/*",
-      "package.json"
+      "extensions/**/*",
+      "package.json",
+      "src/main/services/integrationService.js",
+      "src/main/services/extensionsService.js",
+      "src/shared/integrationsCatalog.js",
+      "src/renderer/components/panels/ExtensionsPanel.jsx"
     ],
     "extraMetadata": {
       "main": "src/main.js"

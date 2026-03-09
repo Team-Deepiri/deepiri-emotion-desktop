@@ -1,5 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// IPC channel names: single source in src/shared/ipcChannels.js (main process uses IPC.*).
+// Preload keeps string literals in sync; when adding channels, update ipcChannels.js and here.
+
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -225,11 +228,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     try {
       if (window.__TAURI__) {
         const { invoke } = window.__TAURI__.tauri;
-        await invoke('api_request', {
-          method: 'POST',
-          endpoint: '/session/record-file-change',
-          data: { file, change_type: changeType, details }
-        });
+        await invoke('record_file_change', { file, change_type: changeType, details: details ?? null });
       } else {
         await ipcRenderer.invoke('record-file-change', { file, changeType, details });
       }
@@ -317,13 +316,56 @@ contextBridge.exposeInMainWorld('electronAPI', {
     }
   },
 
-  getProjectRoot: () => ipcRenderer.invoke('get-project-root'),
-  setProjectRoot: (path) => ipcRenderer.invoke('set-project-root', path),
+  getProjectRoot: async () => {
+    if (window.__TAURI__) {
+      const { invoke } = window.__TAURI__.tauri;
+      return await invoke('get_project_root');
+    }
+    return await ipcRenderer.invoke('get-project-root');
+  },
+  setProjectRoot: async (path) => {
+    if (window.__TAURI__) {
+      const { invoke } = window.__TAURI__.tauri;
+      return await invoke('set_project_root', { path: path ?? null });
+    }
+    return await ipcRenderer.invoke('set-project-root', path);
+  },
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
-  listDirectory: (path) => ipcRenderer.invoke('list-directory', path),
-  listWorkspaceFiles: (rootDir) => ipcRenderer.invoke('list-workspace-files', rootDir),
-  createFile: (opts) => ipcRenderer.invoke('create-file', opts),
-  createFolder: (opts) => ipcRenderer.invoke('create-folder', opts),
+  listDirectory: async (path) => {
+    if (window.__TAURI__) {
+      const { invoke } = window.__TAURI__.tauri;
+      const entries = await invoke('list_directory', { dirPath: path });
+      return entries;
+    }
+    return await ipcRenderer.invoke('list-directory', path);
+  },
+  listWorkspaceFiles: async (rootDir, excludePatterns) => {
+    if (window.__TAURI__) {
+      const { invoke } = window.__TAURI__.tauri;
+      return await invoke('list_workspace_files', { rootDir, excludePatterns: excludePatterns ?? null });
+    }
+    return await ipcRenderer.invoke('list-workspace-files', rootDir, excludePatterns);
+  },
+  createFile: async (opts) => {
+    if (window.__TAURI__) {
+      const { invoke } = window.__TAURI__.tauri;
+      const o = typeof opts === 'object' && opts !== null ? opts : {};
+      const dir_path = o.dirPath ?? o.dir_path ?? '';
+      const name = o.name ?? '';
+      return await invoke('create_file', { dir_path, name });
+    }
+    return await ipcRenderer.invoke('create-file', opts);
+  },
+  createFolder: async (opts) => {
+    if (window.__TAURI__) {
+      const { invoke } = window.__TAURI__.tauri;
+      const o = typeof opts === 'object' && opts !== null ? opts : {};
+      const dir_path = o.dirPath ?? o.dir_path ?? '';
+      const name = o.name ?? '';
+      return await invoke('create_folder', { dir_path, name });
+    }
+    return await ipcRenderer.invoke('create-folder', opts);
+  },
   deletePath: (path) => ipcRenderer.invoke('delete-path', path),
   renamePath: (opts) => ipcRenderer.invoke('rename-path', opts),
   searchInFolder: (rootDir, query, opts) => ipcRenderer.invoke('search-in-folder', rootDir, query, opts),
@@ -386,15 +428,47 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('menu-save', sub);
     return () => ipcRenderer.removeListener('menu-save', sub);
   },
+  onOpenFileFromCli: (cb) => {
+    const sub = (_event, path) => cb(path);
+    ipcRenderer.on('open-file-from-cli', sub);
+    return () => ipcRenderer.removeListener('open-file-from-cli', sub);
+  },
+  onProjectRootChanged: (cb) => {
+    const sub = (_event, path) => cb(path);
+    ipcRenderer.on('project-root-changed', sub);
+    return () => ipcRenderer.removeListener('project-root-changed', sub);
+  },
 
   // AI provider settings (stored in main process userData)
-  getAiSettings: () => ipcRenderer.invoke('get-ai-settings'),
-  setAiSettings: (settings) => ipcRenderer.invoke('set-ai-settings', settings),
+  getAiSettings: async () => {
+    if (window.__TAURI__) {
+      const { invoke } = window.__TAURI__.tauri;
+      return await invoke('get_ai_settings');
+    }
+    return await ipcRenderer.invoke('get-ai-settings');
+  },
+  detectRuntime: () => ipcRenderer.invoke('detect-runtime'),
+  setAiSettings: async (settings) => {
+    if (window.__TAURI__) {
+      const { invoke } = window.__TAURI__.tauri;
+      return await invoke('set_ai_settings', { settings });
+    }
+    return await ipcRenderer.invoke('set-ai-settings', settings);
+  },
   chatCompletion: (opts) => ipcRenderer.invoke('chat-completion', opts),
   getUsage: () => ipcRenderer.invoke('get-usage'),
   getUsageLimits: () => ipcRenderer.invoke('get-usage-limits'),
   setUsageLimits: (limits) => ipcRenderer.invoke('set-usage-limits', limits),
-  resetUsage: () => ipcRenderer.invoke('reset-usage')
+  resetUsage: () => ipcRenderer.invoke('reset-usage'),
+  listExtensions: () => ipcRenderer.invoke('list-extensions'),
+  getChatHistory: (sessionId, limit) => ipcRenderer.invoke('db-get-chat-history', sessionId, limit),
+  appendChatMessage: (payload) => ipcRenderer.invoke('db-append-chat-message', payload),
+  clearChatHistory: (sessionId) => ipcRenderer.invoke('db-clear-chat-history', sessionId),
+  getIntegrationStatus: () => ipcRenderer.invoke('get-integration-status'),
+  connectIntegration: (payload) => ipcRenderer.invoke('connect-integration', payload),
+  disconnectIntegration: (id) => ipcRenderer.invoke('disconnect-integration', id),
+  syncIntegration: (payload) => ipcRenderer.invoke('sync-integration', payload),
+  integrationSupported: (id) => ipcRenderer.invoke('integration-supported', id)
 });
 
 // Expose IDE global utilities

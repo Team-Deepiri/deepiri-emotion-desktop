@@ -1,0 +1,8 @@
+{
+  "name": "cyrex",
+  "displayName": "Cyrex AI",
+  "description": "Agent Playground, RAG, Workflows, task classification, challenge generation.",
+  "version": "1.0.0",
+  "main": "",
+  "contributes": {}
+}

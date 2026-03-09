@@ -1,0 +1,8 @@
+{
+  "name": "github",
+  "displayName": "GitHub",
+  "description": "Sync issues and integrate with repositories.",
+  "version": "1.0.0",
+  "main": "",
+  "contributes": {}
+}
