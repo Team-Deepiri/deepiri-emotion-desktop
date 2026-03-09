@@ -44,6 +44,7 @@ coverage/
 build/
 dist/
 dist-renderer/
+cli/run.js
 web-build/
 
 # ========================================
@@ -119,7 +120,7 @@ build/
 .DS_Store
 Thumbs.db
 *.bak
-.vscode/
+# .vscode/ is NOT ignored — we commit launch.json, tasks.json, extensions.json for all contributors
 .idea/
 *.swp
 *.swo

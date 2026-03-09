@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Electron (main process)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+      "runtimeArgs": [".", "--dev"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": { "ELECTRON_ENABLE_LOGGING": "1" }
+    },
+    {
+      "name": "Run renderer (Vite)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/vite",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug main process (Electron)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+      "runtimeArgs": [".", "--dev", "--remote-debugging-port=9222"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "outputCapture": "std"
+    },
+    {
+      "name": "Run CLI",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/cli/index.js",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    }
+  ]
+}

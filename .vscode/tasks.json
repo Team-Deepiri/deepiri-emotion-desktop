@@ -1,0 +1,59 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev:renderer",
+      "type": "shell",
+      "command": "npm run dev:renderer",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "isBackground": true,
+      "problemMatcher": { "pattern": { "regexp": "^$" }, "background": { "activeOnStart": true, "beginsPattern": "VITE", "endsPattern": "Local:.*5173" } }
+    },
+    {
+      "label": "dev:electron",
+      "type": "shell",
+      "command": "npm run dev",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "dependsOn": ["dev:renderer"]
+    },
+    {
+      "label": "build:renderer",
+      "type": "shell",
+      "command": "npm run build:renderer",
+      "group": "build"
+    },
+    {
+      "label": "lint",
+      "type": "shell",
+      "command": "npm run lint",
+      "group": "test"
+    },
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "npm test",
+      "group": "test"
+    },
+    {
+      "label": "check",
+      "type": "shell",
+      "command": "npm run check",
+      "group": "test"
+    },
+    {
+      "label": "cli",
+      "type": "shell",
+      "command": "npm run cli",
+      "group": "none",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "npm run build",
+      "group": "build"
+    }
+  ]
+}
