@@ -7,7 +7,6 @@ import TaskManager from './components/TaskManager';
 import AIAssistant from './components/AIAssistant';
 import Settings from './components/Settings';
 import ApiModelsPage from './components/ApiModelsPage';
-import IntegrationPanel from './components/IntegrationPanel';
 import MissionCard from './components/MissionCard';
 import CyrexEmbed from './components/CyrexEmbed';
 import PipelinesView from './components/PipelinesView';
@@ -152,6 +151,22 @@ const App = () => {
   useEffect(() => {
     const unsubAbout = api.onMenuAbout(() => setShowAbout(true));
     return () => unsubAbout();
+  }, []);
+
+  useEffect(() => {
+    const unsub = api.onOpenFileFromCli((filePath) => {
+      if (!filePath || !openFileInEditor) return;
+      const name = filePath.replace(/\\/g, '/').split('/').filter(Boolean).pop() || 'file';
+      openFileInEditor({ path: filePath, name });
+    });
+    return () => unsub();
+  }, [openFileInEditor]);
+
+  useEffect(() => {
+    const unsub = api.onProjectRootChanged((path) => {
+      if (path) setProjectRoot(path);
+    });
+    return () => unsub();
   }, []);
 
   useEffect(() => {
@@ -375,7 +390,7 @@ const App = () => {
   const switchView = (view) => {
     setCurrentView(view);
     document.querySelectorAll('.sidebar-content').forEach(el => el.classList.add('hidden'));
-    const sidebarId = view === 'workspace' ? 'explorer-view' : `${view}-view`;
+    const sidebarId = view === 'workspace' ? 'explorer-view' : view === 'integrations' ? 'extensions-view' : `${view}-view`;
     const targetView = document.getElementById(sidebarId);
     if (targetView) {
       targetView.classList.remove('hidden');
@@ -790,7 +805,7 @@ const App = () => {
         <div 
           className={`activity-item ${currentView === 'extensions' ? 'active' : ''}`}
           onClick={() => switchView('extensions')}
-          title="Extensions"
+          title="Integrations"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
@@ -879,13 +894,6 @@ const App = () => {
           <GamificationWidget />
         </div>
 
-        <div className="sidebar-content hidden" id="integrations-view">
-          <div className="sidebar-header">
-            <span>INTEGRATIONS</span>
-          </div>
-          <IntegrationPanel />
-        </div>
-
         <div className="sidebar-content hidden" id="cyrex-view">
           <div className="sidebar-header">
             <span>CYREX AI</span>
@@ -932,7 +940,7 @@ const App = () => {
 
         <div className="sidebar-content hidden" id="extensions-view">
           <div className="sidebar-header">
-            <span>EXTENSIONS</span>
+            <span>INTEGRATIONS</span>
           </div>
           <ExtensionsPanel />
         </div>
@@ -1160,6 +1168,7 @@ const App = () => {
             <div className="ai-assistant-panel">
               {activeTab ? (
                 <AIChatPanel
+                  projectRoot={projectRoot}
                   currentFile={activeTab}
                   currentContent={activeTab.content}
                   selection={editorSelection}

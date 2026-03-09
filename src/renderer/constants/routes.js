@@ -34,7 +34,7 @@ export const ROUTE_LABELS = {
   [ROUTES.SEARCH]: 'Search',
   [ROUTES.OUTLINE]: 'Outline',
   [ROUTES.KEYBINDINGS]: 'Keyboard Shortcuts',
-  [ROUTES.EXTENSIONS]: 'Extensions',
+  [ROUTES.EXTENSIONS]: 'Integrations',
   [ROUTES.API_MODELS]: 'API & Model',
   [ROUTES.SETTINGS]: 'Settings'
 };

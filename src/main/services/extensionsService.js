@@ -1,13 +1,28 @@
 /**
- * Extensions service: scan built-in extensions from extensions/ folder.
+ * Extensions service: scan built-in integrations from extensions/ folder
+ * and merge with catalog of platform integrations we can connect to.
  */
 import { readdir, readFile } from 'fs/promises';
 import { join } from 'path';
 import { app } from 'electron';
 import { IPC } from '../../shared/ipcChannels.js';
+import { INTEGRATIONS_CATALOG } from '../../shared/integrationsCatalog.js';
 
 function getExtensionsDir() {
   return join(app.getAppPath(), 'extensions');
+}
+
+/** Dedupe by id and exclude already-connected (by id). */
+function getAvailableIntegrations(installedIds) {
+  const installedSet = new Set(installedIds.map((x) => x.toLowerCase()));
+  return INTEGRATIONS_CATALOG.filter((e) => !installedSet.has((e.id || '').toLowerCase())).map((e) => ({
+    id: e.id,
+    name: e.name,
+    description: e.description || '',
+    category: e.category || 'Other',
+    version: '-',
+    enabled: false
+  }));
 }
 
 /**
@@ -16,7 +31,7 @@ function getExtensionsDir() {
  */
 export function registerExtensionsService(ipcMain, _deps) {
   ipcMain.handle(IPC.LIST_EXTENSIONS, async () => {
-    const list = [];
+    const installed = [];
     const extDir = getExtensionsDir();
     try {
       const entries = await readdir(extDir, { withFileTypes: true });
@@ -30,7 +45,7 @@ export function registerExtensionsService(ipcMain, _deps) {
         } catch {
           continue;
         }
-        list.push({
+        installed.push({
           id: manifest.name || e.name,
           name: manifest.displayName || manifest.name || e.name,
           description: manifest.description || '',
@@ -41,6 +56,8 @@ export function registerExtensionsService(ipcMain, _deps) {
     } catch {
       // no extensions folder or not readable
     }
-    return list;
+    const installedIds = installed.map((x) => x.id);
+    const available = getAvailableIntegrations(installedIds);
+    return { installed, available };
   });
 }

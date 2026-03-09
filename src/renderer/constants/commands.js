@@ -31,7 +31,7 @@ export const COMMANDS = [
   { id: 'classify-and-ask-ai', label: 'Classify and ask AI' },
   { id: 'command-palette', label: 'Command Palette', shortcut: 'Ctrl+Shift+P' },
   { id: 'keybindings', label: 'Open Keyboard Shortcuts' },
-  { id: 'extensions', label: 'Open Extensions' },
+  { id: 'extensions', label: 'Open Integrations' },
   { id: 'outline', label: 'Toggle Outline' },
   { id: 'go-to-line', label: 'Go to Line…', shortcut: 'Ctrl+G' },
   { id: 'go-to-symbol', label: 'Go to Symbol in Editor…', shortcut: 'Ctrl+Shift+O' },
