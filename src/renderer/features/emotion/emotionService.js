@@ -3,31 +3,28 @@
  * Manages agent profiles, emotional state, and personality-driven behavior.
  */
 
+import { PREDEFINED_AGENTS } from './predefinedAgents.js';
+
 const STORAGE_KEY_PROFILES = 'deepiri_emotion_profiles';
 const STORAGE_KEY_ACTIVE_AGENT = 'deepiri_emotion_active_agent';
 const STORAGE_KEY_EMOTIONAL_STATE = 'deepiri_emotion_state';
 
-const DEFAULT_PROFILES = [
-  {
-    id: 'default',
-    name: 'Deepiri Emotion',
-    role: 'Creative partner',
-    personality: ['supportive', 'curious', 'clear'],
-    tone: 'warm',
-    skills: ['code', 'writing', 'design'],
-    avatar: null,
-    createdAt: new Date().toISOString()
-  }
-];
+const DEFAULT_PROFILES = PREDEFINED_AGENTS.map((p) => ({ ...p, avatar: p.avatar ?? null }));
 
 export function getStoredProfiles() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_PROFILES);
     if (raw) {
       const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_PROFILES;
+      if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_PROFILES;
+      // Migration: if user only had the old single default profile, give them all predefined agents
+      if (parsed.length === 1 && parsed[0].id === 'default' && !parsed[0].builtIn) {
+        saveProfiles(DEFAULT_PROFILES);
+        return DEFAULT_PROFILES;
+      }
+      return parsed;
     }
-  } catch (_) {}
+  } catch { /* ignore */ }
   return DEFAULT_PROFILES;
 }
 
@@ -54,7 +51,7 @@ export function getEmotionalState() {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed.valence === 'number') return parsed;
     }
-  } catch (_) {}
+  } catch { /* ignore */ }
   return {
     valence: 0,
     energy: 0.5,
@@ -75,7 +72,7 @@ export function setEmotionalStateFromChat({ sentiment = 0, messageLength = 0 }) 
   };
   try {
     localStorage.setItem(STORAGE_KEY_EMOTIONAL_STATE, JSON.stringify(next));
-  } catch (_) {}
+  } catch { /* ignore */ }
   return next;
 }
 
@@ -88,3 +85,5 @@ export function getAgentResponseHints(profile, emotionalState) {
     emotionalContext: emotionalState
   };
 }
+
+export { PREDEFINED_AGENTS, getPredefinedAgentById } from './predefinedAgents.js';

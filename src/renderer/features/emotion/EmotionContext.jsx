@@ -44,10 +44,11 @@ export function EmotionProvider({ children }) {
   }, []);
 
   const removeProfile = useCallback((id) => {
-    if (id === 'default') return;
+    const profile = profiles.find((p) => p.id === id);
+    if (id === 'default' || profile?.builtIn) return;
     setProfiles((prev) => prev.filter((p) => p.id !== id));
     if (activeAgentId === id) setActiveAgentId('default');
-  }, [activeAgentId, setActiveAgentId]);
+  }, [activeAgentId, setActiveAgentId, profiles]);
 
   const refreshEmotionalState = useCallback(() => {
     setEmotionalState(getEmotionalState());
@@ -74,6 +75,8 @@ export function EmotionProvider({ children }) {
   );
 }
 
+// Intentional: provider and hook in same file for co-location
+// eslint-disable-next-line react-refresh/only-export-components
 export function useEmotion() {
   const ctx = useContext(EmotionContext);
   if (!ctx) throw new Error('useEmotion must be used within EmotionProvider');

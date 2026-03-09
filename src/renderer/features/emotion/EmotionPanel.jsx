@@ -2,8 +2,9 @@
  * deepiri-emotion: Panel for emotional AI agents — select profile, see state, customize.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEmotion } from './EmotionContext.jsx';
+import { PREDEFINED_AGENTS } from './predefinedAgents.js';
 import './emotion.css';
 
 export default function EmotionPanel({ onOpenAIChat }) {
@@ -19,8 +20,46 @@ export default function EmotionPanel({ onOpenAIChat }) {
     activeProfile
   } = useEmotion();
   const [showAdd, setShowAdd] = useState(false);
+  const [showTemplate, setShowTemplate] = useState(false);
   const [newName, setNewName] = useState('');
   const [newTrait, setNewTrait] = useState('');
+  const [runtimeAgents, setRuntimeAgents] = useState([]);
+  const [subagentName, setSubagentName] = useState('');
+  const [subagentAdding, setSubagentAdding] = useState(false);
+
+  const loadRuntimeAgents = () => {
+    if (window.electronAPI?.listAgents) {
+      window.electronAPI.listAgents().then((list) => setRuntimeAgents(list || []));
+    }
+  };
+
+  useEffect(() => {
+    loadRuntimeAgents();
+  }, []);
+
+  const handleRegisterSubagent = async () => {
+    const name = (subagentName || '').trim();
+    if (!name || !window.electronAPI?.registerAgent) return;
+    setSubagentAdding(true);
+    try {
+      await window.electronAPI.registerAgent({ name, version: '1.0.0' });
+      setSubagentName('');
+      loadRuntimeAgents();
+    } catch (e) {
+      console.error(e);
+    }
+    setSubagentAdding(false);
+  };
+
+  const handleUnregisterSubagent = async (id) => {
+    if (!window.electronAPI?.unregisterAgent) return;
+    try {
+      await window.electronAPI.unregisterAgent(id);
+      loadRuntimeAgents();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleAdd = () => {
     if (!newName.trim()) return;
@@ -28,6 +67,13 @@ export default function EmotionPanel({ onOpenAIChat }) {
     setActiveAgentId(id);
     setNewName('');
     setShowAdd(false);
+  };
+
+  const handleAddFromTemplate = (template) => {
+    const { id: _id, builtIn: _b, createdAt: _c, ...rest } = template;
+    const newId = addProfile({ ...rest, name: `${template.name} (copy)`, builtIn: false });
+    setActiveAgentId(newId);
+    setShowTemplate(false);
   };
 
   return (
@@ -38,18 +84,20 @@ export default function EmotionPanel({ onOpenAIChat }) {
       </div>
 
       <section className="emotion-section">
-        <h3>Active agent</h3>
+        <h3>Agents — pick one for specific helping</h3>
+        <p className="emotion-section-hint">Built-in agents are tuned for code review, docs, refactoring, explaining, tests, security, and pair programming.</p>
         <div className="emotion-agent-cards">
           {profiles.map((p) => (
             <button
               key={p.id}
               type="button"
-              className={`emotion-agent-card ${activeAgentId === p.id ? 'active' : ''}`}
+              className={`emotion-agent-card ${activeAgentId === p.id ? 'active' : ''} ${p.builtIn ? 'emotion-agent-builtin' : ''}`}
               onClick={() => setActiveAgentId(p.id)}
             >
               <span className="emotion-agent-name">{p.name}</span>
               <span className="emotion-agent-role">{p.role || 'Partner'}</span>
-              {p.id !== 'default' && (
+              {p.builtIn && <span className="emotion-agent-badge" title="Predefined agent">●</span>}
+              {!p.builtIn && p.id !== 'default' && (
                 <button
                   type="button"
                   className="emotion-agent-remove"
@@ -76,9 +124,24 @@ export default function EmotionPanel({ onOpenAIChat }) {
             <button type="button" onClick={() => { setShowAdd(false); setNewName(''); }}>Cancel</button>
           </div>
         ) : (
-          <button type="button" className="emotion-btn-secondary" onClick={() => setShowAdd(true)}>
-            + New agent
-          </button>
+          <div className="emotion-add-actions">
+            <button type="button" className="emotion-btn-secondary" onClick={() => setShowAdd(true)}>
+              + New agent
+            </button>
+            <button type="button" className="emotion-btn-secondary" onClick={() => setShowTemplate((t) => !t)}>
+              Add from template
+            </button>
+          </div>
+        )}
+        {showTemplate && (
+          <div className="emotion-template-list">
+            {PREDEFINED_AGENTS.map((t) => (
+              <button key={t.id} type="button" className="emotion-template-item" onClick={() => handleAddFromTemplate(t)}>
+                <span className="emotion-agent-name">{t.name}</span>
+                <span className="emotion-agent-role">{t.role}</span>
+              </button>
+            ))}
+          </div>
         )}
       </section>
 
@@ -125,6 +188,34 @@ export default function EmotionPanel({ onOpenAIChat }) {
           </div>
         </section>
       )}
+
+      <section className="emotion-section">
+        <h3>Runtime subagents</h3>
+        <p className="emotion-section-hint">In-process agents on the Fabric bus. Register subagents for specialized tasks.</p>
+        <ul className="emotion-runtime-agents">
+          {runtimeAgents.map((a) => (
+            <li key={a.id} className="emotion-runtime-agent">
+              <span className="emotion-runtime-agent-name">{a.name}</span>
+              <span className="emotion-runtime-agent-version">v{a.version}</span>
+              {a.name !== 'ide' && (
+                <button type="button" className="emotion-agent-remove" onClick={() => handleUnregisterSubagent(a.id)} title="Unregister">×</button>
+              )}
+            </li>
+          ))}
+        </ul>
+        <div className="emotion-add-actions">
+          <input
+            type="text"
+            value={subagentName}
+            onChange={(e) => setSubagentName(e.target.value)}
+            placeholder="Subagent name"
+            onKeyDown={(e) => e.key === 'Enter' && handleRegisterSubagent()}
+          />
+          <button type="button" className="emotion-btn-secondary" onClick={handleRegisterSubagent} disabled={subagentAdding || !subagentName?.trim()}>
+            Register subagent
+          </button>
+        </div>
+      </section>
 
       <section className="emotion-section">
         <h3>Emotional context</h3>
