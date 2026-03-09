@@ -1,7 +1,10 @@
+/* Create launcher modal — design tokens */
+
 .create-launcher-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: var(--surface-overlay);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,29 +14,30 @@
 .create-launcher {
   width: 520px;
   max-width: 95vw;
-  background: #252526;
-  border: 1px solid #454545;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  background: var(--surface-elevated);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
   overflow: hidden;
+  border-top: 2px solid rgba(230, 126, 34, 0.35);
 }
 
 .create-launcher-header {
   position: relative;
   padding: 20px 24px 12px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--tab-border);
 }
 
 .create-launcher-header h2 {
   margin: 0 0 4px 0;
   font-size: 20px;
-  color: #fff;
+  color: var(--tab-activeForeground);
 }
 
 .create-launcher-header p {
   margin: 0;
-  font-size: 12px;
-  color: #858585;
+  font-size: var(--font-size-small);
+  color: var(--tab-inactiveForeground);
 }
 
 .create-launcher-close {
@@ -45,15 +49,15 @@
   padding: 0;
   background: transparent;
   border: none;
-  color: #888;
+  color: var(--tab-inactiveForeground);
   font-size: 20px;
   cursor: pointer;
   border-radius: 4px;
 }
 
 .create-launcher-close:hover {
-  background: #3c3c3c;
-  color: #fff;
+  background: var(--input-background);
+  color: var(--tab-activeForeground);
 }
 
 .create-launcher-grid {
@@ -69,18 +73,18 @@
   align-items: center;
   gap: 8px;
   padding: 20px 12px;
-  background: #2d2d2d;
-  border: 2px solid #454545;
-  border-radius: 8px;
-  color: #ccc;
+  background: var(--tab-inactiveBackground);
+  border: 2px solid var(--input-border);
+  border-radius: var(--radius-lg);
+  color: var(--sidebar-foreground);
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color var(--duration-normal) var(--ease-out), background var(--duration-normal) var(--ease-out), color var(--duration-fast) var(--ease-out);
 }
 
 .create-launcher-card:hover {
-  border-color: #0ea5e9;
-  background: rgba(14, 165, 233, 0.1);
-  color: #fff;
+  border-color: var(--focusBorder);
+  background: rgba(91, 163, 208, 0.15);
+  color: var(--tab-activeForeground);
 }
 
 .create-launcher-icon {
@@ -93,8 +97,8 @@
 }
 
 .create-launcher-desc {
-  font-size: 11px;
-  color: #858585;
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
 }
 
 .create-launcher-templates {
@@ -102,9 +106,9 @@
 }
 
 .create-launcher-templates h3 {
-  font-size: 11px;
+  font-size: var(--font-size-caption);
   text-transform: uppercase;
-  color: #858585;
+  color: var(--tab-inactiveForeground);
   margin: 0 0 10px 0;
 }
 
@@ -119,30 +123,31 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 8px 12px;
-  background: #3c3c3c;
-  border: 1px solid #454545;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
-  color: #ccc;
-  font-size: 12px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size-small);
   cursor: pointer;
   text-align: left;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .create-launcher-template-btn:hover {
-  background: #454545;
-  border-color: #666;
-  color: #fff;
+  background: var(--tab-hoverBackground);
+  border-color: var(--focusBorder);
+  color: var(--tab-activeForeground);
 }
 
 .create-launcher-template-desc {
   font-size: 10px;
-  color: #858585;
+  color: var(--tab-inactiveForeground);
   margin-top: 2px;
 }
 
 .create-launcher-code {
   padding: 16px 24px;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--tab-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -151,13 +156,15 @@
 
 .create-launcher-code p {
   margin: 0;
-  font-size: 12px;
-  color: #858585;
+  font-size: var(--font-size-small);
+  color: var(--tab-inactiveForeground);
 }
 
 .create-launcher-code kbd {
   padding: 2px 6px;
-  background: #3c3c3c;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 3px;
-  font-size: 11px;
+  font-size: var(--font-size-caption);
+  font-family: var(--font-mono);
 }

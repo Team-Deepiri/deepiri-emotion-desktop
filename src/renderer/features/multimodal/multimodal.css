@@ -1,3 +1,5 @@
+/* Voice input — design tokens */
+
 .voice-input-wrap {
   display: inline-flex;
   align-items: center;
@@ -11,21 +13,21 @@
   width: 36px;
   height: 36px;
   padding: 0;
-  background: #3c3c3c;
-  border: 1px solid #454545;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 50%;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
 }
 
 .voice-mic-btn:hover:not(:disabled) {
-  background: #454545;
-  border-color: #0ea5e9;
+  background: var(--tab-hoverBackground);
+  border-color: var(--focusBorder);
 }
 
 .voice-mic-btn.listening {
-  background: rgba(244, 67, 54, 0.2);
-  border-color: #f44336;
+  background: var(--error-background);
+  border-color: var(--error-foreground);
 }
 
 .voice-mic-icon {
@@ -42,8 +44,8 @@
 }
 
 .voice-interim {
-  font-size: 12px;
-  color: #858585;
+  font-size: var(--font-size-small);
+  color: var(--tab-inactiveForeground);
   font-style: italic;
   max-width: 200px;
   overflow: hidden;

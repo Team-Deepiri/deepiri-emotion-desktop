@@ -1,7 +1,10 @@
+/* Editor & AI panel — design tokens */
+
 .editor-main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .editor-container {
@@ -13,41 +16,48 @@
 
 .ai-assistant-panel {
   width: 400px;
-  border-left: 1px solid #404040;
+  min-width: 320px;
+  border-left: 1px solid var(--panel-border);
   display: flex;
   flex-direction: column;
+  background: var(--sidebar-background);
 }
 
 .code-editor-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #1e1e1e;
+  background: var(--editor-background);
 }
 
 .code-editor-header {
   padding: 8px 12px;
-  background: #2d2d2d;
-  border-bottom: 1px solid #404040;
+  background: var(--editorGroupHeader-tabsBackground);
+  border-bottom: 1px solid var(--panel-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .editor-language {
-  font-size: 11px;
-  color: #969696;
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
   text-transform: uppercase;
 }
 
 .save-btn {
   padding: 4px 8px;
-  background: #007acc;
-  color: #ffffff;
+  background: var(--button-background);
+  color: var(--button-foreground);
   border: none;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 11px;
+  font-size: var(--font-size-caption);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.save-btn:hover {
+  background: var(--button-hoverBackground);
 }
 
 .code-editor-wrapper {
@@ -57,11 +67,11 @@
 }
 
 .line-numbers {
-  background: #252526;
+  background: var(--sidebar-background);
   padding: 20px 8px;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 14px;
-  color: #858585;
+  color: var(--tab-inactiveForeground);
   text-align: right;
   user-select: none;
   min-width: 50px;
@@ -73,9 +83,9 @@
 
 .code-editor {
   flex: 1;
-  background: #1e1e1e;
-  color: #d4d4d4;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  background: var(--editor-background);
+  color: var(--tab-activeForeground);
+  font-family: var(--font-mono);
   font-size: 14px;
   line-height: 1.6;
   padding: 20px;
@@ -88,4 +98,3 @@
 .code-editor:focus {
   outline: none;
 }
-

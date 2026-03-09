@@ -1,4 +1,4 @@
-/* Mission Card Styles */
+/* Mission cards — design tokens + polish */
 
 .mission-container {
   position: fixed;
@@ -12,11 +12,11 @@
 }
 
 .mission-card {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2d2d2d 100%);
-  border: 2px solid #007acc;
+  background: linear-gradient(135deg, var(--list-activeSelectionBackground) 0%, var(--tab-inactiveBackground) 100%);
+  border: 2px solid var(--tab-activeBorder);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+  box-shadow: var(--shadow-medium);
   animation: slideIn 0.3s ease-out;
 }
 
@@ -37,23 +37,23 @@
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--input-border);
 }
 
 .mission-header h3 {
   margin: 0;
-  color: #ffffff;
+  color: var(--tab-activeForeground);
   font-size: 16px;
   font-weight: 600;
 }
 
 .mission-timer {
-  background: rgba(0, 122, 204, 0.2);
-  border: 1px solid #007acc;
+  background: rgba(91, 163, 208, 0.25);
+  border: 1px solid var(--tab-activeBorder);
   border-radius: 6px;
   padding: 6px 12px;
-  color: #4ec9b0;
-  font-family: 'Courier New', monospace;
+  color: var(--success-foreground);
+  font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 600;
 }
@@ -75,28 +75,29 @@
 }
 
 .progress-label {
-  color: #cccccc;
-  font-size: 12px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size-small);
   font-weight: 500;
 }
 
 .progress-bar {
   height: 8px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--editor-background);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #007acc, #4ec9b0);
+  background: linear-gradient(90deg, var(--button-background), var(--success-foreground));
   transition: width 0.3s ease;
   border-radius: 4px;
+  position: relative;
 }
 
 .progress-value {
-  color: #969696;
-  font-size: 11px;
+  color: var(--tab-inactiveForeground);
+  font-size: var(--font-size-caption);
   text-align: right;
 }
 
@@ -108,8 +109,8 @@
 .btn-complete {
   flex: 1;
   padding: 10px 16px;
-  background: linear-gradient(135deg, #4caf50, #45a049);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--success-background), var(--color-orange));
+  color: var(--button-foreground);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -120,24 +121,24 @@
 
 .btn-complete:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 4px 8px rgba(230, 126, 34, 0.4);
 }
 
 .btn-abandon {
   flex: 1;
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #cccccc;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--input-background);
+  color: var(--sidebar-foreground);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: background 0.15s;
 }
 
 .btn-abandon:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--tab-hoverBackground);
 }
 
 .mission-complete {
@@ -145,11 +146,11 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: linear-gradient(135deg, #4caf50, #45a049);
+  background: linear-gradient(135deg, var(--success-background), var(--color-orange));
   border-radius: 16px;
   padding: 32px;
   text-align: center;
-  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.5);
+  box-shadow: var(--shadow-big);
   z-index: 2000;
   animation: celebrate 0.5s ease-out;
 }
@@ -170,18 +171,17 @@
 
 .mission-complete h2 {
   margin: 0 0 12px 0;
-  color: #ffffff;
+  color: var(--button-foreground);
   font-size: 24px;
   font-weight: 700;
 }
 
 .mission-complete p {
   margin: 8px 0;
-  color: #ffffff;
+  color: var(--button-foreground);
   font-size: 16px;
 }
 
-/* Mission Badge Animations */
 .mission-badge {
   display: inline-block;
   animation: bounce 0.6s ease-out;
@@ -196,12 +196,6 @@
   }
 }
 
-/* Progress Pulse Animation */
-.progress-fill {
-  position: relative;
-  overflow: hidden;
-}
-
 .progress-fill::after {
   content: '';
   position: absolute;
@@ -212,10 +206,11 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.15),
     transparent
   );
   animation: shimmer 2s infinite;
+  pointer-events: none;
 }
 
 @keyframes shimmer {

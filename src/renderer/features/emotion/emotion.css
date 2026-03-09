@@ -1,4 +1,4 @@
-/* deepiri-emotion: Emotional AI panel */
+/* Emotion panel — design tokens */
 
 .emotion-panel {
   padding: 16px;
@@ -9,12 +9,12 @@
 .emotion-panel-header h2 {
   font-size: 18px;
   margin: 0 0 4px 0;
-  color: #fff;
+  color: var(--tab-activeForeground);
 }
 
 .emotion-subtitle {
-  font-size: 12px;
-  color: #858585;
+  font-size: var(--font-size-small);
+  color: var(--tab-inactiveForeground);
   margin: 0 0 20px 0;
 }
 
@@ -23,10 +23,16 @@
 }
 
 .emotion-section h3 {
-  font-size: 11px;
+  font-size: var(--font-size-caption);
   text-transform: uppercase;
-  color: #858585;
+  color: var(--tab-inactiveForeground);
   margin: 0 0 10px 0;
+}
+
+.emotion-section-hint {
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
+  margin: -4px 0 8px 0;
 }
 
 .emotion-agent-cards {
@@ -39,24 +45,25 @@
 .emotion-agent-card {
   position: relative;
   padding: 10px 14px;
-  background: #2d2d2d;
-  border: 1px solid #454545;
+  background: var(--tab-inactiveBackground);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
-  color: #ccc;
+  color: var(--sidebar-foreground);
   text-align: left;
   cursor: pointer;
   min-width: 120px;
+  transition: border-color 0.15s, background 0.15s;
 }
 
 .emotion-agent-card:hover {
-  background: #37373d;
-  border-color: #555;
+  background: var(--tab-hoverBackground);
+  border-color: var(--input-border);
 }
 
 .emotion-agent-card.active {
-  border-color: #0ea5e9;
-  background: rgba(14, 165, 233, 0.15);
-  color: #fff;
+  border-color: var(--accent-border);
+  background: rgba(91, 163, 208, 0.2);
+  color: var(--tab-activeForeground);
 }
 
 .emotion-agent-name {
@@ -66,8 +73,20 @@
 }
 
 .emotion-agent-role {
-  font-size: 11px;
-  color: #858585;
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
+}
+
+.emotion-agent-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 8px;
+  color: var(--accent-foreground);
+}
+
+.emotion-agent-card.emotion-agent-builtin {
+  padding-right: 24px;
 }
 
 .emotion-agent-remove {
@@ -76,7 +95,7 @@
   right: 6px;
   background: none;
   border: none;
-  color: #888;
+  color: var(--tab-inactiveForeground);
   cursor: pointer;
   font-size: 16px;
   padding: 0;
@@ -84,7 +103,7 @@
 }
 
 .emotion-agent-remove:hover {
-  color: #f44336;
+  color: var(--error-foreground);
 }
 
 .emotion-add-form {
@@ -96,24 +115,51 @@
 .emotion-add-form input {
   flex: 1;
   padding: 6px 10px;
-  background: #3c3c3c;
-  border: 1px solid #555;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #fff;
+  color: var(--input-foreground);
+}
+
+.emotion-add-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; align-items: center; }
+.emotion-add-actions input { padding: 6px 10px; background: var(--input-background); border: 1px solid var(--input-border); border-radius: 4px; color: var(--input-foreground); font-size: var(--font-size-small); min-width: 140px; }
+.emotion-runtime-agents { list-style: none; margin: 0 0 10px 0; padding: 0; }
+.emotion-runtime-agent { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--tab-inactiveBackground); border-radius: 4px; margin-bottom: 4px; font-size: var(--font-size-small); }
+.emotion-runtime-agent-name { font-weight: 600; }
+.emotion-runtime-agent-version { color: var(--tab-inactiveForeground); font-size: var(--font-size-caption); }
+.emotion-template-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--panel-border); }
+.emotion-template-item {
+  padding: 8px 12px;
+  background: var(--tab-inactiveBackground);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  color: var(--sidebar-foreground);
+  text-align: left;
+  cursor: pointer;
+  font-size: var(--font-size-small);
+  transition: background 0.15s;
+}
+.emotion-template-item:hover { background: var(--tab-hoverBackground); }
+.emotion-template-item .emotion-agent-name { display: block; font-weight: 600; }
+.emotion-template-item .emotion-agent-role { font-size: var(--font-size-caption); color: var(--tab-inactiveForeground); }
+
+.emotion-add-form input:focus {
+  outline: none;
+  border-color: var(--focusBorder);
 }
 
 .emotion-btn-secondary {
   padding: 6px 12px;
-  background: #3c3c3c;
-  border: 1px solid #555;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #ccc;
+  color: var(--sidebar-foreground);
   cursor: pointer;
 }
 
 .emotion-btn-secondary:hover {
-  background: #454545;
-  color: #fff;
+  background: var(--tab-hoverBackground);
+  color: var(--tab-activeForeground);
 }
 
 .emotion-prop-row {
@@ -122,18 +168,23 @@
 
 .emotion-prop-row label {
   display: block;
-  font-size: 11px;
-  color: #858585;
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
   margin-bottom: 4px;
 }
 
 .emotion-prop-row select {
   width: 100%;
   padding: 6px 8px;
-  background: #3c3c3c;
-  border: 1px solid #454545;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #fff;
+  color: var(--input-foreground);
+}
+
+.emotion-prop-row select:focus {
+  outline: none;
+  border-color: var(--focusBorder);
 }
 
 .emotion-traits {
@@ -147,24 +198,24 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 6px;
-  background: #3c3c3c;
+  padding: 2px 8px;
+  background: var(--input-background);
   border-radius: 4px;
-  font-size: 11px;
+  font-size: var(--font-size-caption);
 }
 
 .emotion-tag-remove {
   padding: 0;
   background: none;
   border: none;
-  color: #888;
+  color: var(--tab-inactiveForeground);
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
 }
 
 .emotion-tag-remove:hover {
-  color: #f44336;
+  color: var(--error-foreground);
 }
 
 .emotion-trait-add {
@@ -175,23 +226,28 @@
 .emotion-trait-add input {
   width: 100px;
   padding: 4px 8px;
-  background: #3c3c3c;
-  border: 1px solid #454545;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #fff;
-  font-size: 11px;
+  color: var(--input-foreground);
+  font-size: var(--font-size-caption);
 }
 
 .emotion-system-prompt {
   width: 100%;
   padding: 8px;
-  background: #3c3c3c;
-  border: 1px solid #454545;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #fff;
-  font-size: 11px;
+  color: var(--input-foreground);
+  font-size: var(--font-size-caption);
   resize: vertical;
   min-height: 60px;
+}
+
+.emotion-system-prompt:focus {
+  outline: none;
+  border-color: var(--focusBorder);
 }
 
 .emotion-personality,
@@ -199,19 +255,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  font-size: 12px;
-  color: #ccc;
-}
-
-.emotion-tag {
-  padding: 2px 8px;
-  background: #3c3c3c;
-  border-radius: 4px;
+  font-size: var(--font-size-small);
+  color: var(--sidebar-foreground);
 }
 
 .emotion-hint {
-  font-size: 11px;
-  color: #858585;
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
   margin: 8px 0 0 0;
 }
 
@@ -221,10 +271,10 @@
 
 .emotion-btn-primary {
   padding: 10px 18px;
-  background: linear-gradient(135deg, #0e639c, #503cb4);
+  background: linear-gradient(135deg, var(--button-background), var(--color-orange));
   border: none;
   border-radius: 6px;
-  color: #fff;
+  color: var(--button-foreground);
   font-weight: 500;
   cursor: pointer;
 }

@@ -1,7 +1,9 @@
+/* Classification panel — design tokens */
+
 .classification-panel {
-  background: #1e1e1e;
-  border-top: 1px solid #333;
-  font-size: 11px;
+  background: var(--editor-background);
+  border-top: 1px solid var(--tab-border);
+  font-size: var(--font-size-caption);
 }
 
 .classification-bar {
@@ -14,16 +16,18 @@
 
 .classification-toggle {
   padding: 2px 8px;
-  background: #3c3c3c;
-  border: 1px solid #454545;
-  border-radius: 4px;
-  color: #858585;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  color: var(--tab-inactiveForeground);
   cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
 }
 
 .classification-toggle:hover {
-  color: #fff;
-  border-color: #666;
+  color: var(--tab-activeForeground);
+  border-color: var(--focusBorder);
+  background: var(--tab-hoverBackground);
 }
 
 .classification-last {
@@ -33,31 +37,34 @@
 }
 
 .classification-label {
-  color: #0ea5e9;
+  color: var(--accent-foreground);
   font-weight: 500;
 }
 
 .classification-conf {
-  color: #858585;
+  color: var(--tab-inactiveForeground);
 }
 
 .classification-hint {
-  color: #666;
+  color: var(--tab-inactiveForeground);
   flex: 1;
+  opacity: 0.8;
 }
 
 .classification-run {
   padding: 2px 8px;
-  background: #2d2d2d;
-  border: 1px solid #454545;
-  border-radius: 4px;
-  color: #ccc;
+  background: var(--tab-inactiveBackground);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  color: var(--sidebar-foreground);
   cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
 }
 
 .classification-run:hover:not(:disabled) {
-  background: #3c3c3c;
-  color: #fff;
+  background: var(--tab-hoverBackground);
+  color: var(--tab-activeForeground);
+  border-color: var(--focusBorder);
 }
 
 .classification-run:disabled {
@@ -67,7 +74,7 @@
 
 .classification-history {
   padding: 8px 10px;
-  border-top: 1px solid #2d2d2d;
+  border-top: 1px solid var(--panel-border);
   max-height: 120px;
   overflow-y: auto;
 }
@@ -75,12 +82,12 @@
 .classification-history-title {
   font-size: 10px;
   text-transform: uppercase;
-  color: #666;
+  color: var(--tab-inactiveForeground);
   margin-bottom: 6px;
 }
 
 .classification-history-empty {
-  color: #666;
+  color: var(--tab-inactiveForeground);
   font-style: italic;
 }
 
@@ -95,22 +102,22 @@
   align-items: center;
   gap: 8px;
   padding: 2px 0;
-  border-bottom: 1px solid #2d2d2d;
-  font-size: 11px;
+  border-bottom: 1px solid var(--panel-border);
+  font-size: var(--font-size-caption);
 }
 
 .classification-h-label {
-  color: #0ea5e9;
+  color: var(--accent-foreground);
   min-width: 80px;
 }
 
 .classification-h-conf {
-  color: #858585;
+  color: var(--tab-inactiveForeground);
   min-width: 28px;
 }
 
 .classification-h-text {
-  color: #666;
+  color: var(--tab-inactiveForeground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

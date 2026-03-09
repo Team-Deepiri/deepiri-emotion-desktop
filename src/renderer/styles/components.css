@@ -1,4 +1,4 @@
-/* Component Styles */
+/* Component Styles — design tokens */
 
 .task-manager {
   padding: 12px;
@@ -15,24 +15,39 @@
 
 .task-manager-header h3 {
   margin: 0;
-  color: #cccccc;
-  font-size: 13px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size);
   font-weight: 600;
 }
 
 .btn-primary {
   padding: 6px 12px;
-  background: #007acc;
-  color: #ffffff;
+  background: var(--button-background);
+  color: var(--button-foreground);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--font-size-small);
   font-weight: 500;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
 .btn-primary:hover {
-  background: #1177bb;
+  background: var(--button-hoverBackground);
+}
+
+.btn-secondary {
+  padding: 6px 12px;
+  background: var(--tab-inactiveBackground);
+  color: var(--sidebar-foreground);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: var(--font-size-small);
+}
+.btn-secondary:hover {
+  background: var(--input-background);
+  border-color: var(--focusBorder);
 }
 
 .task-filters {
@@ -44,25 +59,25 @@
 .task-search {
   flex: 1;
   padding: 6px 10px;
-  background: #2d2d2d;
-  border: 1px solid #404040;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #cccccc;
-  font-size: 12px;
+  color: var(--input-foreground);
+  font-size: var(--font-size-small);
 }
 
 .task-search:focus {
   outline: none;
-  border-color: #007acc;
+  border-color: var(--focusBorder);
 }
 
 .task-filters select {
   padding: 6px 10px;
-  background: #2d2d2d;
-  border: 1px solid #404040;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #cccccc;
-  font-size: 12px;
+  color: var(--input-foreground);
+  font-size: var(--font-size-small);
   cursor: pointer;
 }
 
@@ -73,16 +88,16 @@
 }
 
 .task-item {
-  background: #2d2d2d;
-  border: 1px solid #404040;
+  background: var(--tab-inactiveBackground);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   padding: 12px;
-  transition: all 0.2s;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .task-item:hover {
-  background: #333333;
-  border-color: #007acc;
+  background: var(--tab-hoverBackground);
+  border-color: var(--focusBorder);
 }
 
 .task-content {
@@ -91,15 +106,15 @@
 
 .task-content h4 {
   margin: 0 0 6px 0;
-  color: #ffffff;
-  font-size: 13px;
+  color: var(--tab-activeForeground);
+  font-size: var(--font-size);
   font-weight: 600;
 }
 
 .task-content p {
   margin: 0 0 8px 0;
-  color: #969696;
-  font-size: 12px;
+  color: var(--tab-inactiveForeground);
+  font-size: var(--font-size-small);
   line-height: 1.4;
 }
 
@@ -118,24 +133,24 @@
 }
 
 .task-status.pending {
-  background: #ffa500;
-  color: #000000;
+  background: var(--color-orange);
+  color: var(--button-foreground);
 }
 
 .task-status.in_progress {
-  background: #007acc;
-  color: #ffffff;
+  background: var(--button-background);
+  color: var(--button-foreground);
 }
 
 .task-status.completed {
-  background: #4caf50;
-  color: #ffffff;
+  background: var(--success-background);
+  color: var(--button-foreground);
 }
 
 .task-type {
   padding: 2px 6px;
-  background: #404040;
-  color: #cccccc;
+  background: var(--input-background);
+  color: var(--sidebar-foreground);
   border-radius: 3px;
   font-size: 10px;
 }
@@ -148,37 +163,41 @@
 
 .btn-mission {
   padding: 4px 8px;
-  background: #4caf50;
-  color: #ffffff;
+  background: var(--success-background);
+  color: var(--button-foreground);
   border: none;
   border-radius: 3px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: var(--font-size-caption);
 }
 
 .btn-mission:hover {
-  background: #45a049;
+  filter: brightness(1.1);
 }
 
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #969696;
+  color: var(--tab-inactiveForeground);
 }
 
 .empty-state p {
   margin: 0 0 12px 0;
-  font-size: 13px;
+  font-size: var(--font-size);
 }
 
 .empty-state button {
   padding: 8px 16px;
-  background: #007acc;
-  color: #ffffff;
+  background: var(--button-background);
+  color: var(--button-foreground);
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--font-size-small);
+}
+
+.empty-state button:hover {
+  background: var(--button-hoverBackground);
 }
 
 .challenge-panel {
@@ -196,8 +215,8 @@
 
 .challenge-panel-header h3 {
   margin: 0;
-  color: #cccccc;
-  font-size: 13px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size);
   font-weight: 600;
 }
 
@@ -208,16 +227,16 @@
 }
 
 .challenge-item {
-  background: #2d2d2d;
-  border: 1px solid #404040;
+  background: var(--tab-inactiveBackground);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   padding: 12px;
-  transition: all 0.2s;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .challenge-item.active {
-  border-color: #007acc;
-  background: #1e3a5f;
+  border-color: var(--focusBorder);
+  background: var(--list-activeSelectionBackground);
 }
 
 .challenge-header {
@@ -229,15 +248,15 @@
 
 .challenge-header h4 {
   margin: 0;
-  color: #ffffff;
-  font-size: 13px;
+  color: var(--tab-activeForeground);
+  font-size: var(--font-size);
   font-weight: 600;
 }
 
 .challenge-difficulty {
   padding: 2px 6px;
-  background: #007acc;
-  color: #ffffff;
+  background: var(--button-background);
+  color: var(--button-foreground);
   border-radius: 3px;
   font-size: 10px;
   font-weight: 600;
@@ -246,8 +265,8 @@
 
 .challenge-description {
   margin: 0 0 8px 0;
-  color: #cccccc;
-  font-size: 12px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size-small);
   line-height: 1.4;
 }
 
@@ -255,8 +274,8 @@
   display: flex;
   gap: 12px;
   margin-bottom: 8px;
-  font-size: 11px;
-  color: #969696;
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
 }
 
 .challenge-actions {
@@ -266,16 +285,16 @@
 
 .challenge-actions button {
   padding: 6px 12px;
-  background: #007acc;
-  color: #ffffff;
+  background: var(--button-background);
+  color: var(--button-foreground);
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: var(--font-size-caption);
 }
 
 .challenge-actions button:hover {
-  background: #1177bb;
+  background: var(--button-hoverBackground);
 }
 
 .gamification-widget {
@@ -292,8 +311,8 @@
 }
 
 .stat-card {
-  background: #2d2d2d;
-  border: 1px solid #404040;
+  background: var(--tab-inactiveBackground);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   padding: 12px;
   text-align: center;
@@ -305,36 +324,36 @@
 }
 
 .stat-value {
-  color: #ffffff;
+  color: var(--tab-activeForeground);
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 4px;
 }
 
 .stat-label {
-  color: #969696;
-  font-size: 11px;
+  color: var(--tab-inactiveForeground);
+  font-size: var(--font-size-caption);
   text-transform: uppercase;
 }
 
 .xp-progress {
-  background: #2d2d2d;
-  border: 1px solid #404040;
+  background: var(--tab-inactiveBackground);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   padding: 12px;
   margin-bottom: 16px;
 }
 
 .xp-label {
-  color: #cccccc;
-  font-size: 11px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size-caption);
   margin-bottom: 6px;
   text-transform: uppercase;
 }
 
 .xp-bar {
   height: 8px;
-  background: #1e1e1e;
+  background: var(--editor-background);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 6px;
@@ -342,26 +361,26 @@
 
 .xp-fill {
   height: 100%;
-  background: linear-gradient(90deg, #007acc, #4ec9b0);
+  background: linear-gradient(90deg, var(--button-background), var(--success-foreground));
   transition: width 0.3s;
 }
 
 .xp-text {
-  color: #969696;
+  color: var(--tab-inactiveForeground);
   font-size: 10px;
   text-align: right;
 }
 
 .badges-section {
-  background: #2d2d2d;
-  border: 1px solid #404040;
+  background: var(--tab-inactiveBackground);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   padding: 12px;
 }
 
 .badges-title {
-  color: #cccccc;
-  font-size: 11px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size-caption);
   margin-bottom: 8px;
   text-transform: uppercase;
 }
@@ -375,19 +394,20 @@
 .badge-item {
   width: 32px;
   height: 32px;
-  background: #1e1e1e;
-  border: 1px solid #404040;
+  background: var(--editor-background);
+  border: 1px solid var(--input-border);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.2s, border-color 0.15s;
 }
 
 .badge-item:hover {
   transform: scale(1.1);
+  border-color: var(--success-foreground);
 }
 
 .integration-panel {
@@ -405,8 +425,8 @@
 
 .integration-header h3 {
   margin: 0;
-  color: #cccccc;
-  font-size: 13px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size);
   font-weight: 600;
 }
 
@@ -417,8 +437,8 @@
 }
 
 .integration-item {
-  background: #2d2d2d;
-  border: 1px solid #404040;
+  background: var(--tab-inactiveBackground);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   padding: 12px;
   display: flex;
@@ -438,15 +458,15 @@
 
 .integration-info h4 {
   margin: 0 0 4px 0;
-  color: #ffffff;
-  font-size: 13px;
+  color: var(--tab-activeForeground);
+  font-size: var(--font-size);
   font-weight: 600;
 }
 
 .integration-info p {
   margin: 0;
-  color: #969696;
-  font-size: 11px;
+  color: var(--tab-inactiveForeground);
+  font-size: var(--font-size-caption);
 }
 
 .integration-actions {
@@ -456,16 +476,16 @@
 
 .integration-actions button {
   padding: 6px 12px;
-  background: #007acc;
-  color: #ffffff;
+  background: var(--button-background);
+  color: var(--button-foreground);
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: var(--font-size-caption);
 }
 
 .integration-actions button:hover {
-  background: #1177bb;
+  background: var(--button-hoverBackground);
 }
 
 .integration-actions button:disabled {
@@ -477,41 +497,45 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #1e1e1e;
+  background: var(--editor-background);
 }
 
 .terminal-header {
   padding: 8px 12px;
-  background: #2d2d2d;
-  border-bottom: 1px solid #404040;
+  background: var(--sidebarSectionHeader-background);
+  border-bottom: 1px solid var(--panel-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .terminal-header span {
-  color: #cccccc;
-  font-size: 12px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size-small);
   font-weight: 600;
 }
 
 .terminal-header button {
   padding: 4px 8px;
-  background: #404040;
-  color: #cccccc;
-  border: none;
+  background: var(--input-background);
+  color: var(--sidebar-foreground);
+  border: 1px solid var(--input-border);
   border-radius: 3px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: var(--font-size-caption);
+}
+
+.terminal-header button:hover {
+  background: var(--tab-hoverBackground);
 }
 
 .terminal-output {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-  color: #cccccc;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--sidebar-foreground);
   line-height: 1.6;
 }
 
@@ -520,11 +544,11 @@
 }
 
 .terminal-line.input {
-  color: #4ec9b0;
+  color: var(--success-foreground);
 }
 
 .prompt {
-  color: #007acc;
+  color: var(--accent-foreground);
   margin-right: 6px;
 }
 
@@ -532,25 +556,35 @@
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  background: #2d2d2d;
-  border-top: 1px solid #404040;
+  background: var(--editorGroupHeader-tabsBackground);
+  border-top: 1px solid var(--panel-border);
 }
 
 .terminal-input {
   flex: 1;
-  background: #1e1e1e;
+  background: var(--input-background);
   border: none;
-  color: #cccccc;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
+  color: var(--input-foreground);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
   padding: 6px;
+  outline: none;
+}
+
+.terminal-input:focus {
   outline: none;
 }
 
 .settings-panel {
   padding: 12px;
   height: 100%;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.settings-panel .settings-layout {
+  flex: 1;
+  min-height: 0;
 }
 
 .settings-header {
@@ -562,9 +596,70 @@
 
 .settings-header h2 {
   margin: 0;
-  color: #ffffff;
+  color: var(--tab-activeForeground);
   font-size: 16px;
   font-weight: 600;
+}
+
+.settings-layout {
+  display: flex;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.settings-nav {
+  width: 200px;
+  min-width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  border-right: 1px solid var(--input-border);
+  background: var(--tab-inactiveBackground);
+}
+.settings-nav-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  border: none;
+  background: none;
+  color: var(--sidebar-foreground);
+  cursor: pointer;
+  font-size: var(--font-size-small);
+  border-radius: 0;
+  transition: background 0.1s ease;
+}
+.settings-nav-item:hover {
+  background: var(--list-hoverBackground);
+}
+.settings-main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 0 16px 16px 0;
+}
+.settings-search-row {
+  margin-bottom: 16px;
+}
+.settings-search-input {
+  width: 100%;
+  max-width: 360px;
+  padding: 8px 12px;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  color: var(--input-foreground);
+  font-size: var(--font-size-small);
+}
+.settings-search-input::placeholder {
+  color: var(--tab-inactiveForeground);
+}
+.settings-search-input:focus {
+  outline: none;
+  border-color: var(--focusBorder);
 }
 
 .settings-content {
@@ -574,17 +669,74 @@
 }
 
 .settings-section {
-  background: #2d2d2d;
-  border: 1px solid #404040;
+  background: var(--tab-inactiveBackground);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   padding: 16px;
 }
 
 .settings-section h3 {
   margin: 0 0 12px 0;
-  color: #ffffff;
+  color: var(--tab-activeForeground);
   font-size: 14px;
   font-weight: 600;
+}
+
+.settings-hint {
+  margin: 0 0 12px 0;
+  font-size: var(--font-size-small);
+  color: var(--tab-inactiveForeground);
+  line-height: 1.4;
+}
+
+.settings-hint-inline {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
+}
+
+.usage-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.usage-card {
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.usage-card .usage-label {
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
+}
+.usage-card .usage-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--tab-activeForeground);
+}
+.usage-history {
+  margin-top: 8px;
+}
+.usage-history .usage-label {
+  display: block;
+  font-size: var(--font-size-small);
+  color: var(--tab-inactiveForeground);
+  margin-bottom: 6px;
+}
+.usage-days {
+  margin: 0;
+  padding-left: 20px;
+  font-size: var(--font-size-small);
+  color: var(--sidebar-foreground);
+}
+.usage-days li {
+  margin-bottom: 4px;
 }
 
 .setting-item {
@@ -597,8 +749,8 @@
 
 .setting-item label {
   display: block;
-  color: #cccccc;
-  font-size: 12px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size-small);
   margin-bottom: 6px;
 }
 
@@ -607,11 +759,11 @@
 .setting-item select {
   width: 100%;
   padding: 8px;
-  background: #1e1e1e;
-  border: 1px solid #404040;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #cccccc;
-  font-size: 12px;
+  color: var(--input-foreground);
+  font-size: var(--font-size-small);
 }
 
 .setting-item input[type="checkbox"] {
@@ -621,7 +773,7 @@
 .setting-item input:focus,
 .setting-item select:focus {
   outline: none;
-  border-color: #007acc;
+  border-color: var(--focusBorder);
 }
 
 .welcome-screen {
@@ -631,12 +783,12 @@
   justify-content: center;
   height: 100%;
   text-align: center;
-  color: #cccccc;
+  color: var(--sidebar-foreground);
 }
 
 .welcome-screen h1 {
   margin: 0 0 12px 0;
-  color: #ffffff;
+  color: var(--tab-activeForeground);
   font-size: 32px;
   font-weight: 600;
 }
@@ -644,7 +796,7 @@
 .welcome-screen p {
   margin: 0 0 32px 0;
   font-size: 16px;
-  color: #969696;
+  color: var(--tab-inactiveForeground);
 }
 
 .quick-actions {
@@ -654,8 +806,8 @@
 
 .quick-actions button {
   padding: 12px 24px;
-  background: #007acc;
-  color: #ffffff;
+  background: var(--button-background);
+  color: var(--button-foreground);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -665,5 +817,5 @@
 }
 
 .quick-actions button:hover {
-  background: #1177bb;
+  background: var(--button-hoverBackground);
 }

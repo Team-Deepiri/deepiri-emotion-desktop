@@ -1,8 +1,10 @@
+/* Guide / What's new — design tokens */
+
 .guide-view {
   height: 100%;
   overflow: auto;
   padding: 24px;
-  background: #1e1e1e;
+  background: var(--editor-background);
 }
 
 .guide-content {
@@ -11,15 +13,11 @@
 }
 
 .guide-text {
-  font-family: inherit;
-  font-size: 13px;
+  font-family: var(--font-sans);
+  font-size: var(--font-size);
   line-height: 1.6;
-  color: #ccc;
+  color: var(--sidebar-foreground);
   white-space: pre-wrap;
   word-wrap: break-word;
   margin: 0;
-}
-
-.guide-text {
-  color: #e0e0e0;
 }

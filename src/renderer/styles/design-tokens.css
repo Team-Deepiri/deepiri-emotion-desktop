@@ -1,0 +1,197 @@
+/**
+ * Design tokens — Deepiri Emotion IDE
+ * Theme: light blue (natural base) + light blue & orange (accents).
+ * Refined contrast, surfaces, and motion.
+ */
+:root {
+  /* Typography */
+  --font-sans: "Segoe UI", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --font-mono: "Cascadia Code", "SF Mono", "Consolas", "Monaco", "Courier New", monospace;
+  --font-size: 13px;
+  --font-size-small: 12px;
+  --font-size-caption: 11px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 0.15s;
+  --duration-normal: 0.2s;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Palette — light blue (natural) + orange (accent) */
+  --color-light-blue: #5ba3d0;
+  --color-light-blue-soft: #7eb8da;
+  --color-light-blue-deep: #3498db;
+  --color-light-blue-muted: #2d5a75;
+  --color-orange: #e67e22;
+  --color-orange-bright: #f0a020;
+  --color-orange-deep: #c96a1a;
+
+  /* Activity bar */
+  --activityBar-width: 48px;
+  --activityBar-background: #162d3d;
+  --activityBar-foreground: #8fc4e0;
+  --activityBar-inactiveForeground: #5a8fa8;
+  --activityBar-activeBorder: #e67e22;
+  --activityBar-activeBackground: #1e3a4d;
+  --activityBar-hoverBackground: #243b4a;
+
+  /* Sidebar */
+  --sidebar-background: #1e3a4d;
+  --sidebar-foreground: #c5dceb;
+  --sidebar-border: #2a4a5e;
+  --sidebarSectionHeader-background: #243b4a;
+  --sidebarSectionHeader-foreground: #b8d4e8;
+  --sidebarSectionHeader-border: transparent;
+  --list-hoverBackground: #2a4a5e;
+  --list-activeSelectionBackground: #0d5a8a;
+  --list-activeSelectionForeground: #ffffff;
+
+  /* Editor & tabs */
+  --editor-background: #151f2b;
+  --editorGroupHeader-tabsBackground: #1e3a4d;
+  --tab-inactiveBackground: #243b4a;
+  --tab-inactiveForeground: #8fb4c9;
+  --tab-activeBackground: #151f2b;
+  --tab-activeForeground: #e8f4fc;
+  --tab-activeBorder: #e67e22;
+  --tab-border: #2a4a5e;
+  --tab-hoverBackground: #2a4a5e;
+
+  /* Panel */
+  --panel-background: #151f2b;
+  --panel-border: #2a4a5e;
+  --panelTab-inactiveForeground: #8fb4c9;
+  --panelTab-activeForeground: #e8f4fc;
+  --panelTab-activeBorder: #e67e22;
+
+  /* Status bar — orange accent with depth */
+  --statusBar-background: linear-gradient(180deg, #e67e22 0%, #d96f1a 100%);
+  --statusBar-background-solid: #e67e22;
+  --statusBar-foreground: #ffffff;
+  --statusBar-height: 22px;
+
+  /* Inputs & buttons */
+  --input-background: #243b4a;
+  --input-foreground: #c5dceb;
+  --input-border: #3d5a6e;
+  --focusBorder: #5ba3d0;
+  --focusRing: 0 0 0 2px rgba(91, 163, 208, 0.5);
+  --button-background: #3498db;
+  --button-hoverBackground: #e67e22;
+  --button-foreground: #ffffff;
+
+  /* Surfaces (elevated for modals/dropdowns) */
+  --surface-elevated: #243b4a;
+  --surface-overlay: rgba(21, 31, 43, 0.92);
+
+  /* Scrollbar */
+  --scrollbar-width: 10px;
+  --scrollbar-track: #1a2835;
+  --scrollbar-slider-background: #3d5a6e99;
+  --scrollbar-slider-hoverBackground: #5ba3d0b3;
+  --scrollbar-slider-borderRadius: 10px;
+
+  /* Shadows — theme-tinted */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow-big: var(--shadow-lg);
+  --shadow-medium: var(--shadow-md);
+  --shadow-modal: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(230, 126, 34, 0.15);
+
+  /* Semantic */
+  --error-foreground: #f48771;
+  --error-background: rgba(244, 135, 113, 0.18);
+  --warning-foreground: #e6c65c;
+  --success-foreground: #4ec9b0;
+  --success-background: #2d7d5a;
+  --accent-foreground: #5ba3d0;
+  --accent-border: #e67e22;
+  --link-foreground: #5ba3d0;
+
+  /* Canvas / visual editor grid */
+  --canvas-grid: rgba(91, 163, 208, 0.12);
+
+  /* Full design — depth & chrome */
+  --chrome-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --chrome-border-subtle: rgba(255, 255, 255, 0.04);
+  --status-bar-border-top: rgba(0, 0, 0, 0.2);
+  --status-bar-highlight: rgba(255, 255, 255, 0.08);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --activityBar-background: #b8d4e8;
+  --activityBar-foreground: #0d3d5c;
+  --activityBar-inactiveForeground: #4a8fb8;
+  --activityBar-activeBorder: #e67e22;
+  --activityBar-activeBackground: #d4e9f7;
+  --activityBar-hoverBackground: #c5e1f0;
+  --sidebar-background: #e3f2fa;
+  --sidebar-foreground: #0d3d5c;
+  --sidebar-border: #b8d4e8;
+  --sidebarSectionHeader-background: #d4e9f7;
+  --sidebarSectionHeader-foreground: #0d3d5c;
+  --list-hoverBackground: #d4e9f7;
+  --list-activeSelectionBackground: #3498db;
+  --list-activeSelectionForeground: #ffffff;
+  --editor-background: #f5fafd;
+  --editorGroupHeader-tabsBackground: #e3f2fa;
+  --tab-inactiveBackground: #d4e9f7;
+  --tab-inactiveForeground: #4a6d85;
+  --tab-activeBackground: #f5fafd;
+  --tab-activeForeground: #0d3d5c;
+  --tab-activeBorder: #e67e22;
+  --tab-border: #b8d4e8;
+  --tab-hoverBackground: #d4e9f7;
+  --panel-background: #f5fafd;
+  --panel-border: #b8d4e8;
+  --panelTab-inactiveForeground: #4a6d85;
+  --panelTab-activeForeground: #0d3d5c;
+  --panelTab-activeBorder: #e67e22;
+  --statusBar-background: linear-gradient(180deg, #e67e22 0%, #d96f1a 100%);
+  --statusBar-background-solid: #e67e22;
+  --input-background: #ffffff;
+  --input-foreground: #0d3d5c;
+  --input-border: #b8d4e8;
+  --button-background: #3498db;
+  --button-hoverBackground: #d96f1a;
+  --surface-elevated: #ffffff;
+  --surface-overlay: rgba(0, 0, 0, 0.4);
+  --focusBorder: #2980b9;
+  --focusRing: 0 0 0 2px rgba(52, 152, 219, 0.4);
+  --accent-foreground: #2980b9;
+  --accent-border: #e67e22;
+  --scrollbar-track: #e8f4fc;
+  --scrollbar-slider-background: #5ba3d066;
+  --scrollbar-slider-hoverBackground: #3498db99;
+  --shadow-modal: 0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(230, 126, 34, 0.2);
+  --canvas-grid: rgba(52, 152, 219, 0.15);
+}
+
+/* High contrast */
+[data-theme="hc"] {
+  --activityBar-activeBorder: #e67e22;
+  --tab-activeBorder: #e67e22;
+  --panelTab-activeBorder: #e67e22;
+  --focusBorder: #5ba3d0;
+  --list-activeSelectionBackground: #0d5a8a;
+  --list-activeSelectionForeground: #fff;
+  --scrollbar-slider-background: #5ba3d0;
+  --scrollbar-slider-hoverBackground: #5ba3d0;
+  --canvas-grid: rgba(91, 163, 208, 0.35);
+}

@@ -1,3 +1,5 @@
+/* Fine-tuning panel — design tokens */
+
 .finetuning-panel {
   padding: 20px;
   max-width: 420px;
@@ -6,12 +8,12 @@
 .finetuning-panel h2 {
   font-size: 16px;
   margin: 0 0 8px 0;
-  color: #fff;
+  color: var(--tab-activeForeground);
 }
 
 .finetuning-desc {
-  font-size: 12px;
-  color: #858585;
+  font-size: var(--font-size-small);
+  color: var(--tab-inactiveForeground);
   margin: 0 0 20px 0;
 }
 
@@ -28,17 +30,22 @@
 }
 
 .finetuning-form label span {
-  font-size: 11px;
-  color: #858585;
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
 }
 
 .finetuning-form input {
   padding: 8px 10px;
-  background: #3c3c3c;
-  border: 1px solid #454545;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #fff;
-  font-size: 13px;
+  color: var(--input-foreground);
+  font-size: var(--font-size);
+}
+
+.finetuning-form input:focus {
+  outline: none;
+  border-color: var(--focusBorder);
 }
 
 .finetuning-actions {
@@ -47,25 +54,37 @@
 
 .finetuning-btn {
   padding: 8px 16px;
-  background: #3c3c3c;
-  border: 1px solid #454545;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #ccc;
+  color: var(--sidebar-foreground);
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.finetuning-btn:hover:not(:disabled) {
+  background: var(--tab-hoverBackground);
+  border-color: var(--focusBorder);
+  color: var(--tab-activeForeground);
 }
 
 .finetuning-btn.primary {
-  background: linear-gradient(135deg, #0e639c, #503cb4);
+  background: linear-gradient(135deg, var(--button-background), var(--color-orange));
   border-color: transparent;
-  color: #fff;
+  color: var(--button-foreground);
 }
 
 .finetuning-btn.primary:hover:not(:disabled) {
   filter: brightness(1.1);
 }
 
+.finetuning-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .finetuning-message {
   margin-top: 16px;
-  font-size: 12px;
-  color: #858585;
+  font-size: var(--font-size-small);
+  color: var(--tab-inactiveForeground);
 }

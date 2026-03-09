@@ -1,11 +1,11 @@
-/* Visual editor — no-code canvas. The beast. */
+/* Visual editor — design tokens */
 
 .visual-editor-root {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #1a1a1a;
-  color: #e0e0e0;
+  background: var(--editor-background);
+  color: var(--sidebar-foreground);
 }
 
 .visual-toolbar {
@@ -15,8 +15,8 @@
   flex-wrap: wrap;
   gap: 12px;
   padding: 10px 16px;
-  background: #252526;
-  border-bottom: 1px solid #333;
+  background: var(--editorGroupHeader-tabsBackground);
+  border-bottom: 1px solid var(--tab-border);
   min-height: 52px;
 }
 
@@ -29,12 +29,12 @@
 .visual-toolbar-title {
   font-size: 16px;
   font-weight: 600;
-  color: #fff;
+  color: var(--tab-activeForeground);
 }
 
 .visual-toolbar-subtitle {
-  font-size: 11px;
-  color: #858585;
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
 }
 
 .visual-toolbar-center {
@@ -56,19 +56,19 @@
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  background: #3c3c3c;
-  border: 1px solid #454545;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
-  color: #ccc;
-  font-size: 12px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size-small);
   cursor: grab;
   transition: background 0.15s, border-color 0.15s;
 }
 
 .visual-palette-btn:hover {
-  background: #454545;
-  border-color: #0ea5e9;
-  color: #fff;
+  background: var(--tab-hoverBackground);
+  border-color: var(--focusBorder);
+  color: var(--tab-activeForeground);
 }
 
 .visual-palette-btn:active {
@@ -88,17 +88,17 @@
 
 .visual-toolbar-btn {
   padding: 6px 12px;
-  background: #3c3c3c;
-  border: 1px solid #454545;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #ccc;
-  font-size: 12px;
+  color: var(--sidebar-foreground);
+  font-size: var(--font-size-small);
   cursor: pointer;
 }
 
 .visual-toolbar-btn:hover:not(:disabled) {
-  background: #454545;
-  color: #fff;
+  background: var(--tab-hoverBackground);
+  color: var(--tab-activeForeground);
 }
 
 .visual-toolbar-btn:disabled {
@@ -107,9 +107,9 @@
 }
 
 .visual-toolbar-btn.primary {
-  background: linear-gradient(135deg, #0e639c, #503cb4);
+  background: linear-gradient(135deg, var(--button-background), var(--color-orange));
   border-color: transparent;
-  color: #fff;
+  color: var(--button-foreground);
 }
 
 .visual-toolbar-btn.primary:hover {
@@ -121,27 +121,27 @@
   align-items: center;
   gap: 4px;
   padding: 4px 6px;
-  background: #2d2d2d;
+  background: var(--tab-inactiveBackground);
   border-radius: 4px;
-  font-size: 12px;
+  font-size: var(--font-size-small);
 }
 
 .visual-zoom button {
   width: 24px;
   height: 24px;
   padding: 0;
-  background: #3c3c3c;
-  border: none;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 3px;
-  color: #ccc;
+  color: var(--sidebar-foreground);
   cursor: pointer;
   font-size: 16px;
   line-height: 1;
 }
 
 .visual-zoom button:hover {
-  background: #454545;
-  color: #fff;
+  background: var(--tab-hoverBackground);
+  color: var(--tab-activeForeground);
 }
 
 .visual-zoom span {
@@ -159,10 +159,10 @@
   flex: 1;
   position: relative;
   overflow: auto;
-  background: #1e1e1e;
+  background: var(--editor-background);
   background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    linear-gradient(var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
   background-size: 8px 8px;
 }
 
@@ -189,7 +189,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: #666;
+  color: var(--tab-inactiveForeground);
   font-size: 14px;
   pointer-events: none;
 }
@@ -207,19 +207,19 @@
 }
 
 .visual-node:hover {
-  border-color: rgba(14, 165, 233, 0.4);
+  border-color: rgba(91, 163, 208, 0.5);
 }
 
 .visual-node.selected {
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 1px #0ea5e9;
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 1px var(--accent-border);
 }
 
 .visual-node-selection-ring {
   position: absolute;
   inset: -2px;
   border-radius: 8px;
-  border: 2px solid #0ea5e9;
+  border: 2px solid var(--accent-border);
   pointer-events: none;
 }
 
@@ -230,22 +230,22 @@
   align-items: center;
   justify-content: center;
   padding: 6px 10px;
-  background: #2d2d2d;
+  background: var(--tab-inactiveBackground);
   border-radius: 4px;
-  font-size: 12px;
-  color: #ccc;
+  font-size: var(--font-size-small);
+  color: var(--sidebar-foreground);
 }
 
 .visual-node-preview-btn {
   padding: 4px 12px;
-  background: #0e639c;
-  color: #fff;
+  background: var(--button-background);
+  color: var(--button-foreground);
   border-radius: 4px;
-  font-size: 11px;
+  font-size: var(--font-size-caption);
 }
 
 .visual-node-preview-text {
-  color: #858585;
+  color: var(--tab-inactiveForeground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -254,11 +254,11 @@
 
 .visual-node-preview-input {
   padding: 4px 8px;
-  background: #3c3c3c;
-  border: 1px solid #555;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #858585;
-  font-size: 11px;
+  color: var(--input-foreground);
+  font-size: var(--font-size-caption);
   width: 100%;
   max-width: 140px;
 }
@@ -271,35 +271,35 @@
 .visual-node-preview-box {
   font-size: 10px;
   text-transform: uppercase;
-  color: #858585;
+  color: var(--tab-inactiveForeground);
 }
 
 .visual-node-preview-card {
   font-weight: 600;
-  font-size: 11px;
+  font-size: var(--font-size-caption);
 }
 
 .visual-node-preview-spacer {
   display: block;
   width: 100%;
   min-height: 4px;
-  background: rgba(14, 165, 233, 0.2);
+  background: rgba(91, 163, 208, 0.25);
   border-radius: 2px;
 }
 
 .visual-props-panel {
   width: 260px;
   min-width: 260px;
-  background: #252526;
-  border-left: 1px solid #333;
+  background: var(--sidebar-background);
+  border-left: 1px solid var(--sidebar-border);
   padding: 16px;
   overflow-y: auto;
 }
 
 .visual-props-panel h3 {
-  font-size: 12px;
+  font-size: var(--font-size-small);
   text-transform: uppercase;
-  color: #858585;
+  color: var(--tab-inactiveForeground);
   margin: 0 0 14px 0;
 }
 
@@ -317,37 +317,37 @@
 }
 
 .visual-prop-row label {
-  font-size: 11px;
-  color: #858585;
+  font-size: var(--font-size-caption);
+  color: var(--tab-inactiveForeground);
 }
 
 .visual-prop-row input,
 .visual-prop-row select {
   padding: 6px 8px;
-  background: #3c3c3c;
-  border: 1px solid #454545;
+  background: var(--input-background);
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  color: #fff;
-  font-size: 12px;
+  color: var(--input-foreground);
+  font-size: var(--font-size-small);
 }
 
 .visual-prop-row input:focus,
 .visual-prop-row select:focus {
   outline: none;
-  border-color: #0ea5e9;
+  border-color: var(--focusBorder);
 }
 
 .visual-props-remove {
   width: 100%;
   padding: 8px;
-  background: rgba(244, 67, 54, 0.15);
-  border: 1px solid #f44336;
+  background: var(--error-background);
+  border: 1px solid var(--error-foreground);
   border-radius: 4px;
-  color: #f44336;
-  font-size: 12px;
+  color: var(--error-foreground);
+  font-size: var(--font-size-small);
   cursor: pointer;
 }
 
 .visual-props-remove:hover {
-  background: rgba(244, 67, 54, 0.25);
+  background: var(--error-background);
 }
