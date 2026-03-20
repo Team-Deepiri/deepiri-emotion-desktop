@@ -17,6 +17,7 @@ import './styles/components.css';
 import './styles/ui.css';
 import './styles/layout.css';
 import './styles/design-polish.css';
+import './styles/modern-ide.css';
 
 ReactDOM.createRoot(document.getElementById('app')).render(
   <React.StrictMode>
