@@ -45,17 +45,6 @@ export function attachAgentRunner(bus, config = {}) {
 
       let result;
       try {
-        // if (toolIntent.tool === 'read_file') {
-        //   result = await readFileTool(toolIntent.args.filePath);
-        // } else if (toolIntent.tool === 'search') {
-        //   result = await searchTool(toolIntent.args.query);
-        // } else if (toolIntent.tool === 'run_command') {
-        //   result = await runCommandTool(toolIntent.args.command);
-        // } else {
-        //   result = { error: 'Unknown tool' };
-        // }
-
-        // NEW TOOL EXECUTION
         result = await executeTool(toolIntent.tool, toolIntent.args);
       } catch (err) {
         result = { error: err.message };
@@ -97,40 +86,249 @@ export function attachAgentRunner(bus, config = {}) {
       });
 
       const agentInstructions = `
-        You are an autonomous coding agent.
+        You are an autonomous coding agent helping the user understand and work on this codebase.
 
-        You have access to tools:
-        - read file <path>
-        - search <query>
+        Your job is to:
+        - inspect the actual code when needed
+        - explain how files and systems work
+        - answer based on real project details, not generic assumptions
+        - be concise, clear, and useful
 
-        CRITICAL RULES:
-        - If you need information, DO NOT explain first
-        - DO NOT ask the user for clarification
-        - Instead, output ONLY the tool command
-        - ALWAYS use relative file paths (e.g., cli/index.js)
-        - NEVER use absolute paths like /home/...
+        AVAILABLE TOOLS:
+        - read_file: read a specific file by relative path
+        - search: search the codebase when you do not know the right file
 
-        Examples:
-        read file package.json
-        search startup logic
+        TOOL USAGE RULES:
+        - Use tools when the answer depends on file contents.
+        - If you know the likely file path, read it directly instead of searching.
+        - Use search only when you do not know where the relevant code is.
+        - Do not ask the user for clarification unless absolutely necessary.
+        - Always use relative paths like "cli/index.js".
+        - Never use absolute paths like "/home/...".
+        - If the question is about how something works in this codebase (agent behavior, tools, file reading, startup, flow):
+          - you MUST use read_file to inspect the actual implementation before answering
+          - do NOT answer from general knowledge
+          - do NOT guess
 
-        After receiving tool results:
-        - Continue reasoning
-        - You may use more tools if needed
+        WHEN USING A TOOL:
+        Output ONLY valid JSON.
+        Do not include explanations, markdown, comments, or extra text.
 
-        ONLY give a final answer when you are confident.
+        Valid tool call examples:
+        {
+          "tool": "read_file",
+          "args": { "filePath": "package.json" }
+        }
 
-        If the question is about code, you MUST use tools first.
+        {
+          "tool": "search",
+          "args": { "query": "startup logic" }
+        }
 
-        If you are on the final step, do not use tools. 
-        Give your best final answer from the information already gathered.
+        FINAL ANSWER RULES:
+        When you have enough information, answer with:
+        FINAL_ANSWER:
+
+        Your final answer must match the user's intent.
+
+        INTENT RULES:
+        - If the user asks to read, show, or open a file:
+          - use read_file
+          - then briefly explain what the file does
+
+        - If the user asks for an overview or summary:
+          - explain what role the file plays in the system
+          - connect important details into a clear mental model
+          - explain how the project runs, builds, or behaves
+          - use specific values from the file
+
+        - If the user asks "find" or "where":
+          - answer directly and briefly
+          - include the exact file, value, script, function, or location
+
+       - If the user asks "explain", "how it works", "startup", or asks how a system/feature/file/command works:
+          - you MUST inspect the relevant implementation files before answering
+          - do NOT answer from general knowledge
+          - explain the answer as an ordered flow, starting from the trigger or entry point
+          - use an arrow-style execution chain when the answer involves a process, startup path, command, UI flow, or agent loop
+          - after the flow, briefly explain the important steps in beginner-friendly language
+          - avoid broad summaries before explaining the actual sequence
+
+        RESPONSE STYLE:
+
+        - USE THE PLANNING GUIDANCE:
+          - The prompt includes a JSON object called [Planning guidance].
+          - You MUST use its intent and answerStyle to choose your response format.
+          - If intent is "explain_flow":
+            - start with "FLOW:"
+            - use an arrow-style sequence first
+            - then explain the key steps briefly
+            - do not start with a paragraph summary
+          - If intent is "file_overview":
+            - explain the file's role
+            - include "What matters"
+            - end with a short mental model
+          - If intent is "find_specific":
+            - answer directly in 1-3 sentences
+        
+        - For overview or explain answers, use this structure:
+          - Start with a plain-English summary of what this file does in this project.
+          - Then include a short "What matters" section with 3-5 bullets.
+          - Each bullet must explain why the detail matters, not just name it.
+          - End with a short "Mental model" sentence that connects the pieces together.
+          - Do not give generic explanations that could apply to any project.
+          - Do not just list fields, imports, dependencies, or sections.
+        - Start overview/explain answers with 1-2 plain-English sentences answering:
+          "What role does this file play in the system?"
+        - Use concrete details from the file, such as:
+          - actual script names
+          - entry points
+          - key dependencies
+          - important configuration
+          - referenced files
+        - Explain what those details do in this project.
+        - Prefer insight over completeness.
+        - Keep answers concise unless the user asks for depth.
+        - When identifying what kind of application this is, base it on explicit signals from the file (e.g., presence of Electron, main entry file, scripts).
+        - Do not guess or infer the type of application without referencing specific evidence.
+
+        CODEBASE GUIDANCE:
+        - For startup or entrypoint questions, inspect package.json and the target entry file.
+        - For CLI startup questions, inspect cli/index.js.
+        - For agent behavior questions, inspect cli/agent/runner.js.
+        - For streaming/provider questions, inspect cli/agent/llmStream.js.
+        - For tool behavior questions, inspect cli/agent/tools.js.
+        - For UI behavior questions, inspect files in cli/ui/.
+
+        AFTER TOOL RESULTS:
+        - Continue reasoning silently.
+        - Use another tool if the result points to an important referenced file.
+        - If a script points to an entry file, inspect that file before explaining startup flow.
+        - If you have enough information, give a concise final answer starting with FINAL_ANSWER:.
+
+        FINAL STEP RULE:
+        If this is the final step, do not use tools.
+        Give the best answer possible from the information already gathered, starting with FINAL_ANSWER:.
         `;
-      // const promptForLlm = toolContext ? `${text}\n${toolContext}` : text;
-      const promptForLlm = toolContext
-        ? `${agentInstructions}\n\nUser request:\n${text}\n${toolContext}`
-        : `${agentInstructions}\n\nUser request:\n${text}`;
 
+      // This is a simple rule-based planner.
+      // Its job is NOT to answer the user.
+      // Its job is to decide:
+      // 1. What kind of request this is
+      // 2. Whether the agent should read files first
+      // 3. Which files are likely relevant
+      // 4. What answer style the LLM should use
+      //
+      // Later, we can replace these hardcoded rules with an LLM-based classifier.  
+
+       const createSimplePlan = (userText) => {
+          const lowerText = userText.toLowerCase();
+          const makePlan = (intent, requiredFiles = [], answerStyle = 'concise') => ({
+            intent,
+            needsTools: requiredFiles.length > 0,
+            requiredFiles,
+            answerStyle
+          });
+
+          if (
+            lowerText.includes('startup') ||
+            lowerText.includes('starts up') ||
+            lowerText.includes('how this cli')
+          ) {
+            return makePlan(
+              'explain_flow',
+              ['package.json', 'cli/index.js'],
+              'beginner_explanation'
+            );
+          }
+
+          if (
+            lowerText.includes('how the agent') ||
+            lowerText.includes('agent decides') ||
+            lowerText.includes('use tools') ||
+            lowerText.includes('uses tools')
+          ) {
+            return makePlan(
+              'explain_flow',
+              ['cli/agent/runner.js', 'cli/agent/tools.js'],
+              'beginner_explanation'
+            );
+          }
+
+          if (lowerText.includes('package.json')) {
+            return makePlan(
+              'file_overview',
+              ['package.json'],
+              'overview'
+            );
+          }
+
+          if (
+            lowerText.includes('reads files') ||
+            lowerText.includes('read files') ||
+            lowerText.includes('where the agent reads files') ||
+            lowerText.includes('file reading')
+          ) {
+            return makePlan(
+              'find_specific',
+              ['cli/agent/runner.js', 'cli/agent/tools.js'],
+              'direct'
+            );
+          }
+
+          if (lowerText.includes('find') || lowerText.includes('where')) {
+            return {
+              intent: 'find_specific',
+              needsTools: true,
+              requiredFiles: [],
+              answerStyle: 'direct'
+            };
+          }
+
+          return makePlan(
+            'direct_answer',
+            [],
+            'concise'
+          );
+        };
+
+        const simplePlan = createSimplePlan(text); 
+
+        let plannedToolContext = '';
+
+        if (simplePlan.needsTools && simplePlan.requiredFiles.length > 0) {
+          for (const filePath of simplePlan.requiredFiles) {
+            const result = await executeTool('read_file', { filePath });
+
+            plannedToolContext += `
+
+        [Planned file read: ${filePath}]
+        ${JSON.stringify(result, null, 2).slice(0, 4000)}`;
+          }
+        }
+
+      const promptForLlm = toolContext
+          ? `${agentInstructions}
+
+        [Planning guidance]
+        ${JSON.stringify(simplePlan, null, 2)}
+
+        User request:
+        ${text}
+        ${toolContext}
+        ${plannedToolContext}`
+          : `${agentInstructions}
+
+        [Planning guidance]
+        ${JSON.stringify(simplePlan, null, 2)}
+
+        User request:
+        ${text}
+        ${plannedToolContext}`;
+        
       let agentContext = promptForLlm;
+      const visitedFiles = new Set();
+      const usedToolCalls = new Set();
 
       while (steps < MAX_STEPS) {
         steps++;
@@ -146,9 +344,31 @@ export function attachAgentRunner(bus, config = {}) {
 
         await streamLLM(bus, `${agentContext}
 
+          You are currently in the reasoning phase.
+
+          Your job in this phase:
+          - Decide what information you need
+          - Use tools if necessary
+          - DO NOT explain things to the user yet
+          - DO NOT summarize
+          - Only gather information or decide next action
+
+          IMPORTANT:
+          - If this is the final step, you MUST follow the response format based on [Planning guidance]
+          - If intent is "explain_flow":
+            - You MUST output:
+              FLOW:
+              followed by an arrow-style execution sequence
+            - Do NOT output a paragraph first
+            - Do NOT add a summary paragraph after the explanation
+            - Do NOT output "Final Answer" or any concluding section
+
           Current step: ${steps} of ${MAX_STEPS}
+          If this is the final step, you MUST produce a final answer starting with FINAL_ANSWER:.
+          Do not skip this. Do not continue reasoning.
           If this is the final step, provide a final answer instead of using a tool.`, {
           config,
+          silent: true,
           onToken: (token) => {
             lastResponse += token;
           }
@@ -161,14 +381,26 @@ export function attachAgentRunner(bus, config = {}) {
 
         const loopToolIntent = parseToolIntent(lastResponse);
 
-        // bus.emit(EVENTS.AGENT_STEP, {
-        //   id: `step-${Date.now()}`,
-        //   type: 'thinking',
-        //   status: 'complete',
-        //   message: loopToolIntent
-        //     ? `Detected tool: ${loopToolIntent.tool} ${JSON.stringify(loopToolIntent.args)}`
-        //     : `No tool detected. Response length: ${lastResponse.length}`
-        // });
+        const lastToolCallKey = loopToolIntent
+          ? `${loopToolIntent.tool}-${JSON.stringify(loopToolIntent.args)}`
+          : null;
+
+        if (lastToolCallKey && usedToolCalls.has(lastToolCallKey)) {
+          agentContext = `${agentContext}
+
+        [System note]
+        You already called this exact tool and received its result.
+        Do not call the same tool again.
+        Use the information already gathered and respond with FINAL_ANSWER:.`;
+
+          continue;
+        }
+
+        if (lastToolCallKey) {
+          usedToolCalls.add(lastToolCallKey);
+        }
+
+        const isFinalAnswer = lastResponse.trim().startsWith('FINAL_ANSWER:');
 
         if (loopToolIntent) {
           bus.emit(EVENTS.AGENT_STATUS, {
@@ -185,6 +417,10 @@ export function attachAgentRunner(bus, config = {}) {
 
           const loopToolResult = await executeTool(loopToolIntent.tool, loopToolIntent.args);
 
+          if (loopToolIntent.tool === 'read_file') {
+            visitedFiles.add(loopToolIntent.args.filePath);
+          }
+
           bus.emit(EVENTS.AGENT_STEP, {
             id: `step-${Date.now()}`,
             type: 'tool_result',
@@ -200,13 +436,30 @@ export function attachAgentRunner(bus, config = {}) {
           continue;
         }
 
-        // SIMPLE DECISION: stop if response looks complete
-        if (lastResponse.toLowerCase().includes('how can i assist')) {
+        if (isFinalAnswer) {
+    
+          const cleanedResponse = lastResponse
+            .replace(/^FINAL_ANSWER:\s*/, '')
+            .replace(/\nFINAL_ANSWER:\s*/g, '\n')
+            .trim();
+
+          bus.emit(EVENTS.LLM_TOKEN, { token: cleanedResponse });
+          bus.emit(EVENTS.LLM_DONE, {});
+
           break;
         }
 
-        // break;
+        // If there is no tool request and no FINAL_ANSWER marker,
+        // treat the response as the final answer instead of silently dropping it.
+        if (lastResponse.trim()) {
+          bus.emit(EVENTS.LLM_TOKEN, { token: lastResponse.trim() });
+          bus.emit(EVENTS.LLM_DONE, {});
+        }
+
+        break;
       }
+
+              
 
       bus.emit(EVENTS.AGENT_STEP, {
         id: `step-${Date.now()}`,

@@ -19,6 +19,7 @@ export default function App({ eventBus, workspaceDir = null }) {
         ...s,
         messages: [...s.messages, { role: 'user', content: text }],
         streamingMessage: '',
+        steps: [],
         error: null
       }));
     };

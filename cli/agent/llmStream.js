@@ -60,11 +60,16 @@ async function streamOpenAI(bus, messages, config, opts = {}) {
         try {
           const json = JSON.parse(data);
           const content = json?.choices?.[0]?.delta?.content;
-          // if (content) bus.emit(EVENTS.LLM_TOKEN, { token: content });
+
           if (content) {
-             bus.emit(EVENTS.LLM_TOKEN, { token: content });
-             if (typeof opts.onToken === 'function') opts.onToken(content);
-           }
+            if (!opts.silent) {
+              bus.emit(EVENTS.LLM_TOKEN, { token: content });
+            }
+
+            if (typeof opts.onToken === 'function') {
+              opts.onToken(content);
+            }
+          }
         } catch {
           // skip malformed chunk
         }

@@ -103,6 +103,19 @@ export function runCommandTool(command, cwd = DEFAULT_CWD) {
  * Parse user message for simple tool intent. Returns { tool, args } or null.
  */
 export function parseToolIntent(text) {
+  // Try parsing structured JSON tool call first
+  try {
+    const parsed = JSON.parse(text.trim());
+
+    if (parsed.tool && parsed.args) {
+      return {
+        tool: parsed.tool,
+        args: parsed.args
+      };
+    }
+  } catch (e) {
+    // Not JSON, continue to regex parsing
+  }
   const raw = (text || '').trim();
   const t = raw.toLowerCase();
   // const readMatch = t.match(/read\s+file\s+(.+)/) || t.match(/read\s+(.+\.\w+)/);
