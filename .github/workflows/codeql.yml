@@ -1,8 +1,14 @@
 name: CodeQL
 
+# Disabled pull_request trigger to avoid conflict with GitHub default CodeQL setup
+# (causes "advanced configurations cannot be processed when default setup is enabled")
+
+# on:
+#   pull_request:
+#     branches: [main, dev]
+#   push:
+#     branches: [main, dev]
 on:
-  pull_request:
-    branches: [main, dev]
   push:
     branches: [main, dev]
 
