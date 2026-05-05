@@ -10,14 +10,21 @@ const STEP_ICONS = {
 
 export function StepTimeline({ steps }) {
   if (!steps.length) return null;
+
+  const visibleSteps = steps.filter(
+    (s) => s.type !== 'thinking' && s.type !== 'tool_call' && s.type !== 'tool_result'
+  );
+
+  if (!visibleSteps.length) return null;
+
   return React.createElement(
     Box,
     { flexDirection: 'column', gap: 0, marginBottom: 1 },
     React.createElement(Text, { dimColor: true }, 'Steps:'),
-    ...steps.slice(-5).map((s, i) =>
+    ...visibleSteps.slice(-5).map((s, i) =>
       React.createElement(
         Text,
-        { key: s.id || i, dimColor: s.status === 'running' },
+        { key: `${s.id || 'step'}-${i}`, dimColor: s.status === 'running' },
         ' ',
         STEP_ICONS[s.type] || '•',
         ' ',
