@@ -9,11 +9,6 @@ const SIMULATED_TOKEN_DELAY_MS = 20;
 /**
  * Emit a full string as tokens (char-by-char) for TUI effect.
  */
-// function emitReplyAsTokens(bus, text) {
-//   for (const char of (text || '')) {
-//     bus.emit(EVENTS.LLM_TOKEN, { token: char });
-//   }
-// }
 
 function emitReplyAsTokens(bus, text, onToken = null) {
   for (const char of (text || '')) {
@@ -25,7 +20,6 @@ function emitReplyAsTokens(bus, text, onToken = null) {
 /**
  * Stream OpenAI chat completions (SSE).
  */
-// async function streamOpenAI(bus, messages, config) {
 async function streamOpenAI(bus, messages, config, opts = {}) {
   const url = 'https://api.openai.com/v1/chat/completions';
   const res = await fetch(url, {
@@ -144,12 +138,6 @@ export async function streamLLM(bus, prompt, opts = {}) {
   const messages = [{ role: 'user', content: prompt }];
 
   if (config.provider === 'openai' && config.openaiApiKey) {
-//     bus.emit(EVENTS.AGENT_STEP, {
-//       id: `step-${Date.now()}`,
-//       type: 'thinking',
-//       status: 'complete',
-//       message: `onToken type: ${typeof opts.onToken}`
-// });
     await streamOpenAI(bus, messages, config, opts);
     bus.emit(EVENTS.LLM_DONE, {});
     return;

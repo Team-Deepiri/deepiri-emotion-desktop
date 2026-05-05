@@ -23,8 +23,6 @@ export function attachAgentRunner(bus, config = {}) {
       message: 'Thinking...'
     });
 
-    // steps++;
-
     if (steps > MAX_STEPS) {
       bus.emit(EVENTS.AGENT_STATUS, { status: 'idle', message: 'Max steps reached' });
       return;
@@ -210,16 +208,6 @@ export function attachAgentRunner(bus, config = {}) {
         If this is the final step, do not use tools.
         Give the best answer possible from the information already gathered, starting with FINAL_ANSWER:.
         `;
-
-      // This is a simple rule-based planner.
-      // Its job is NOT to answer the user.
-      // Its job is to decide:
-      // 1. What kind of request this is
-      // 2. Whether the agent should read files first
-      // 3. Which files are likely relevant
-      // 4. What answer style the LLM should use
-      //
-      // Later, we can replace these hardcoded rules with an LLM-based classifier.  
 
        const createSimplePlan = (userText) => {
           const lowerText = userText.toLowerCase();
@@ -449,8 +437,6 @@ export function attachAgentRunner(bus, config = {}) {
           break;
         }
 
-        // If there is no tool request and no FINAL_ANSWER marker,
-        // treat the response as the final answer instead of silently dropping it.
         if (lastResponse.trim()) {
           bus.emit(EVENTS.LLM_TOKEN, { token: lastResponse.trim() });
           bus.emit(EVENTS.LLM_DONE, {});
@@ -458,8 +444,6 @@ export function attachAgentRunner(bus, config = {}) {
 
         break;
       }
-
-              
 
       bus.emit(EVENTS.AGENT_STEP, {
         id: `step-${Date.now()}`,
