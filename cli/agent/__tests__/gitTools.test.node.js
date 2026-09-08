@@ -16,10 +16,26 @@ function sh(cmd, cwd) {
   execSync(cmd, { cwd, stdio: 'pipe', env: { ...process.env, ...GIT_ENV } });
 }
 
+// Cleanup is not the thing under test: git can still be flushing into .git as
+// we delete it, which surfaces as ENOTEMPTY and fails an otherwise-passing
+// test. A few quick retries, then give up quietly — a leftover dir in the OS
+// temp area is harmless and gets reclaimed. Retries are kept short on purpose:
+// long ones compound across .git's tree and blow the hook timeout instead.
+function removeRepo(dir) {
+  if (!dir) return;
+  try {
+    rmSync(dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 20 });
+  } catch { /* temp dir left behind; the OS will clean it up */ }
+}
+
 function initRepo() {
   const dir = mkdtempSync(join(tmpdir(), 'git-tools-test-'));
   sh('git init -b main', dir);
   sh('git config commit.gpgsign false', dir);
+  // Background maintenance writes into .git after the command returns, which
+  // races the afterEach cleanup and fails it with ENOTEMPTY.
+  sh('git config gc.auto 0', dir);
+  sh('git config maintenance.auto false', dir);
   writeFileSync(join(dir, 'README.md'), 'initial\n');
   sh('git add README.md', dir);
   sh('git commit -m "initial"', dir);
@@ -33,7 +49,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  if (repo) rmSync(repo, { recursive: true, force: true });
+  removeRepo(repo);
 });
 
 // ─── gitStatus ────────────────────────────────────────────────────────────────
@@ -91,7 +107,7 @@ describe('gitStatus', () => {
       const result = await gitStatus(nonRepo);
       expect(result.error).toMatch(/Not a git repository/);
     } finally {
-      rmSync(nonRepo, { recursive: true, force: true });
+      removeRepo(nonRepo);
     }
   });
 });
@@ -157,13 +173,36 @@ describe('gitDiff', () => {
     expect(result.diff.split('\n').length).toBeLessThanOrEqual(401);
   });
 
+  it('honours a caller-supplied maxLines above the default cap', async () => {
+    const bigContent = Array.from({ length: 600 }, (_, i) => `line ${i}`).join('\n') + '\n';
+    writeFileSync(join(repo, 'big.txt'), bigContent);
+    sh('git add big.txt', repo);
+    sh('git commit -m "add big"', repo);
+    const changedContent = Array.from({ length: 600 }, (_, i) => `changed ${i}`).join('\n') + '\n';
+    writeFileSync(join(repo, 'big.txt'), changedContent);
+
+    const result = await gitDiff(repo, { maxLines: 5000 });
+    expect(result.truncated).toBe(false);
+    expect(result.diff).not.toContain('truncated');
+    expect(result.diff).toContain('+changed 599');
+  });
+
+  it('truncates at a caller-supplied maxLines below the default cap', async () => {
+    writeFileSync(join(repo, 'README.md'), Array.from({ length: 50 }, (_, i) => `l${i}`).join('\n') + '\n');
+
+    const result = await gitDiff(repo, { maxLines: 10 });
+    expect(result.truncated).toBe(true);
+    expect(result.diff).toContain('showing 10 of');
+    expect(result.diff.split('\n').length).toBeLessThanOrEqual(11);
+  });
+
   it('returns a clear error when cwd is not a git repo', async () => {
     const nonRepo = mkdtempSync(join(tmpdir(), 'not-a-repo-'));
     try {
       const result = await gitDiff(nonRepo);
       expect(result.error).toMatch(/Not a git repository/);
     } finally {
-      rmSync(nonRepo, { recursive: true, force: true });
+      removeRepo(nonRepo);
     }
   });
 });
